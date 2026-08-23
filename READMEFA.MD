@@ -123,7 +123,7 @@ Variables and Secrets
 
 مثلاً:
 
-API_URL
+ADMIN
 
 مقدار:
 
