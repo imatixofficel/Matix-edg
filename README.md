@@ -1,26 +1,27 @@
-🕋 به نام خدا
+🕋 In the Name of Allah
 
-MatiX Worker
+🚀 MatiX Worker
 
-پروژه MatiX Worker برای اجرای سرویس‌ها و APIها روی Cloudflare Workers ساخته شده است.
+MatiX Worker is a lightweight and customizable project built for Cloudflare Workers.
 
----
-
-📌 امکانات
-
-- ⚡ اجرای سریع روی Cloudflare Workers
-- ☁️ بدون نیاز به سرور اختصاصی
-- 🔐 پشتیبانی از Variables و Secrets
-- 🗄️ پشتیبانی از Cloudflare KV
-- 🔄 قابلیت اتصال به GitHub
-- 📱 مناسب برای پروژه‌های وب و موبایل
-- 🧩 قابل توسعه و شخصی‌سازی
+It can be used for APIs, web services, bots, online tools, and other serverless projects.
 
 ---
 
-📁 ساختار پروژه
+✨ Features
 
-ساختار پیشنهادی:
+- ⚡ Fast and lightweight
+- ☁️ Runs on Cloudflare Workers
+- 🔐 Variables & Secrets support
+- 🗄️ Cloudflare KV support
+- 🔄 GitHub integration
+- 📱 Suitable for web and mobile projects
+- 🧩 Easy to customize
+- 🌐 Serverless architecture
+
+---
+
+📁 Project Structure
 
 MatiX-Worker/
 │
@@ -30,34 +31,32 @@ MatiX-Worker/
 ├── LICENSE
 └── .gitignore
 
-فایل اصلی Worker:
+📄 Main File
 
-_worker.js
+"_worker.js" is the main Cloudflare Worker file.
 
 ---
 
-🛠️ ساخت فایل Worker
+🛠️ Creating the Worker File
 
-اگر می‌خواهید پروژه را از ابتدا بسازید، یک پوشه با نام دلخواه ایجاد کنید.
-
-مثلاً:
+First, create a project folder:
 
 mkdir MatiX-Worker
 cd MatiX-Worker
 
-سپس فایل زیر را ایجاد کنید:
+Then create the main Worker file:
 
 _worker.js
 
-کد Worker خود را داخل این فایل قرار دهید.
+Put your Worker code inside "_worker.js".
 
 ---
 
-☁️ ساخت Worker در Cloudflare
+☁️ Creating a Cloudflare Worker
 
-وارد داشبورد Cloudflare شوید.
+Go to the Cloudflare Dashboard.
 
-سپس:
+Navigate to:
 
 Workers & Pages
         ↓
@@ -67,85 +66,81 @@ Workers
         ↓
 Create Worker
 
-یک نام برای Worker انتخاب کنید.
+Choose a name for your Worker.
 
-مثلاً:
+Example:
 
 matix-worker
 
-بعد Worker را ایجاد و Deploy کنید.
+Then click Create and Deploy.
 
 ---
 
-📤 آپلود فایل Worker
+📤 Uploading "_worker.js"
 
-بعد از ساخت Worker، وارد صفحه Worker شوید.
-
-از قسمت:
+Open your Worker and select:
 
 Edit Code
 
-فایل:
+Then add your:
 
 _worker.js
 
-را قرار دهید.
+Worker code.
 
-سپس:
+After adding the code, click:
 
 Save and Deploy
 
-را انتخاب کنید.
+After a successful deployment, Cloudflare will provide a Worker URL.
 
-Cloudflare بعد از Deploy یک آدرس برای Worker ایجاد می‌کند.
-
-مثال:
+Example:
 
 https://matix-worker.example.workers.dev
 
 ---
 
-🔐 تنظیم Variables
+🔐 Variables
 
-برای متغیرهای معمولی می‌توانید از Variables استفاده کنید.
+Variables are useful for configuration values that are not sensitive.
 
-مسیر:
+Go to:
 
 Workers & Pages
         ↓
-Worker
+Your Worker
         ↓
 Settings
         ↓
 Variables and Secrets
 
-یک Variable جدید ایجاد کنید.
+Create a new Variable.
 
-مثلاً:
+Example:
 
+Variable Name:
 API_URL
 
-مقدار:
-
+Value:
 https://example.com/api
+
+You can then access the value from your Worker environment.
 
 ---
 
-🔒 تنظیم Secrets
+🔒 Secrets
 
-اطلاعات حساس را داخل "_worker.js" یا GitHub قرار ندهید.
+Never put sensitive information directly inside "_worker.js" or a public GitHub repository.
 
-مواردی مانند:
+Examples of sensitive information:
 
-API_KEY
-BOT_TOKEN
-SECRET_KEY
-PASSWORD
-PRIVATE_TOKEN
+- API Keys
+- Bot Tokens
+- Secret Keys
+- Passwords
+- Private Tokens
 
-باید به‌عنوان Secret ذخیره شوند.
-
-از مسیر:
+Go to:
 
 Settings
         ↓
@@ -155,100 +150,125 @@ Add
         ↓
 Secret
 
-Secret موردنظر را اضافه کنید.
+Add the secret there.
+
+⚠️ Important
+
+Do NOT write secrets directly inside your source code.
+
+❌ Bad:
+
+const TOKEN = "YOUR_SECRET_TOKEN";
+
+✅ Better:
+
+Cloudflare Secrets
 
 ---
 
-🗄️ ساخت Cloudflare KV
+🗄️ Cloudflare KV
 
-اگر پروژه به KV نیاز دارد:
+Cloudflare KV can be used to store data that your Worker needs to access.
 
-وارد Cloudflare شوید و به بخش:
+To create a KV Namespace:
 
 Workers & Pages
         ↓
 KV
-
-بروید.
-
-سپس:
-
+        ↓
 Create Namespace
 
-را انتخاب کنید.
-
-برای مثال:
+Example Namespace:
 
 MATIX_KV
 
 ---
 
-🔗 اتصال KV به Worker
+🔗 Connecting KV to the Worker
 
-بعد از ساخت Namespace، وارد Worker شوید:
+After creating your KV Namespace:
 
-Worker
+Your Worker
         ↓
 Settings
         ↓
 Bindings
 
-یک KV Namespace Binding اضافه کنید.
+Add:
 
-مثلاً نام Binding را قرار دهید:
+KV Namespace Binding
 
+For example:
+
+Binding Name:
 KV
 
-و Namespace ساخته‌شده را انتخاب کنید.
+Then select your KV Namespace.
 
-در کد Worker می‌توان از آن استفاده کرد:
+---
+
+💻 Using KV in "_worker.js"
+
+Example:
 
 await env.KV.put("test", "Hello MatiX");
 
 const value = await env.KV.get("test");
 
-«نام "KV" در کد باید با نام Binding در Cloudflare یکسان باشد.»
+console.log(value);
+
+«Important: The Binding name in Cloudflare must match the name used in your code.»
+
+For example:
+
+Cloudflare Binding:
+KV
+
+must match:
+
+env.KV
 
 ---
 
-🔄 اتصال GitHub به Cloudflare
+🔄 GitHub Integration
 
-برای مدیریت نسخه‌های پروژه، Repository را در GitHub ایجاد کنید.
+Create a new repository on GitHub.
 
-ساختار Repository:
+Recommended structure:
 
 MatiX-Worker/
+│
 ├── _worker.js
 ├── README.md
 ├── README_FA.md
 ├── LICENSE
 └── .gitignore
 
-سپس Repository را به Cloudflare متصل کنید تا بتوانید پروژه را از GitHub مدیریت و Deploy کنید.
+You can then connect the repository to Cloudflare Workers for deployment and version control.
 
 ---
 
-⚠️ نکات امنیتی
+🔐 Security
 
-هرگز اطلاعات حساس را داخل GitHub عمومی قرار ندهید.
+Never upload private credentials to a public GitHub repository.
 
-❌ اشتباه:
+Keep these values inside Cloudflare Secrets:
 
-const TOKEN = "YOUR_SECRET_TOKEN";
+API_KEY
+BOT_TOKEN
+SECRET_KEY
+PASSWORD
+PRIVATE_TOKEN
 
-✅ روش بهتر:
-
-Cloudflare Secrets
-
-و مقدار Secret را از محیط Worker دریافت کنید.
+Your source code should not contain real secret values.
 
 ---
 
-📱 ارتباط با MatiX
+📱 MatiX
 
-📲 Telegram
+✈️ Telegram
 
-"✈️ @Imatix7" (https://t.me/Imatix7)
+"@Imatix7" (https://t.me/Imatix7)
 
 📸 Instagram
 
@@ -256,13 +276,19 @@ Cloudflare Secrets
 
 ---
 
-⭐ حمایت
+⭐ Support
 
-اگر پروژه برای شما مفید بود، Repository را ⭐ Star کنید.
+If you like this project:
+
+⭐ Star the repository
+
+🍴 Fork the repository
+
+📢 Share it with others
 
 ---
 
-<div align="center">🕋 به نام خدا
+<div align="center">🕋 In the Name of Allah
 
 MatiX
 
