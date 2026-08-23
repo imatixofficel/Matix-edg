@@ -6,7 +6,7 @@ workers_dev = true
 # Create a KV namespace in Cloudflare and replace the placeholder IDs below.
 [[kv_namespaces]]
 binding = "KV"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "bcece1711ddc47c385b84a2a0868b086"
 preview_id = "REPLACE_WITH_KV_PREVIEW_NAMESPACE_ID"
 
 [vars]
