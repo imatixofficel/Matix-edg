@@ -1,4 +1,4 @@
-name = "matrix-edge-worker"
+name = "matix-edge"
 main = "_worker.js"
 compatibility_date = "2026-08-23"
 workers_dev = true
