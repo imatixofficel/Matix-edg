@@ -7,68 +7,6 @@ const WS早期数据最大字节 = 8 * 1024, WS早期数据最大头长度 = Mat
 const 上行合包目标字节 = 20 * 1024, 上行队列最大字节 = 16 * 1024 * 1024, 上行队列最大条目 = 4096;
 const 下行Grain包字节 = 32 * 1024, 下行Grain尾部阈值 = 512, 下行Grain低水位字节 = Math.max(4096, 下行Grain尾部阈值 * 12), 下行Grain最大等待轮次 = 4;
 let TCP并发拨号数 = 2, 反代并发拨号数 = 1, 预加载竞速拨号 = false;
-///////////////////////////////////////////////////////Matix ITG 多客户额度系统///////////////////////////////////////////////
-let 客户缓存 = { list: null, ts: 0 };
-const 客户缓存TTL毫秒 = 20000;
-
-async function 加载客户列表(env) {
-	const now = Date.now();
-	if (客户缓存.list && (now - 客户缓存.ts) < 客户缓存TTL毫秒) return 客户缓存.list;
-	try {
-		const raw = await env.KV.get('customers');
-		const list = raw ? JSON.parse(raw) : [];
-		客户缓存 = { list, ts: now };
-		return list;
-	} catch (e) {
-		return 客户缓存.list || [];
-	}
-}
-
-async function 保存客户列表(env, list) {
-	await env.KV.put('customers', JSON.stringify(list, null, 2));
-	客户缓存 = { list, ts: Date.now() };
-}
-
-function 客户是否可用(customer) {
-	if (!customer || customer.enabled === false) return false;
-	if (customer.expiry) {
-		const today = new Date().toISOString().slice(0, 10);
-		if (today > customer.expiry) return false;
-	}
-	if (customer.quotaBytes > 0 && (customer.usedBytes || 0) >= customer.quotaBytes) return false;
-	return true;
-}
-
-async function 构建候选身份表(env, adminUUID) {
-	const map = new Map();
-	map.set(adminUUID, null); // admin identity: unlimited, no quota tracking
-	try {
-		const list = await 加载客户列表(env);
-		for (const c of list) {
-			if (c && c.id && 客户是否可用(c)) map.set(c.id, c);
-		}
-	} catch (e) { }
-	return map;
-}
-
-const 客户用量待写 = new Map(); // customerId -> pending bytes not yet flushed to KV
-async function 记录客户用量(env, ctx, customerId, bytes) {
-	if (!customerId || !bytes) return;
-	const pending = (客户用量待写.get(customerId) || 0) + bytes;
-	客户用量待写.set(customerId, pending);
-	if (pending < 512 * 1024) return; // batch: only flush to KV every ~512KB per customer
-	客户用量待写.set(customerId, 0);
-	if (!ctx || typeof ctx.waitUntil !== 'function') return;
-	ctx.waitUntil((async () => {
-		try {
-			const list = await 加载客户列表(env);
-			const idx = list.findIndex(c => c.id === customerId);
-			if (idx === -1) return;
-			list[idx].usedBytes = (list[idx].usedBytes || 0) + pending;
-			await 保存客户列表(env, list);
-		} catch (e) { }
-	})());
-}
 ///////////////////////////////////////////////////////查杀特征码///////////////////////////////////////////////
 const 特征码字典 = [
 	(Proxy.name + "IP").toUpperCase(),
@@ -89,8 +27,6 @@ export default {
 		const UA = request.headers.get('User-Agent') || 'null';
 		const upgradeHeader = (request.headers.get('Upgrade') || '').toLowerCase(), contentType = (request.headers.get('content-type') || '').toLowerCase();
 		const 管理员密码 = env.ADMIN || env.admin || env.PASSWORD || env.password || env.pswd || env.TOKEN || env.KEY || env.UUID || env.uuid;
-		const 面板品牌名 = env.BRAND || env.BRAND_NAME || 'Matix ITG';
-		const 面板频道链接 = env.TG_CHANNEL || env.CHANNEL || 'https://t.me/Imatix7';
 		const 加密秘钥 = env.KEY || '勿动此默认密钥，有需求请自行通过添加变量KEY进行修改';
 		const userIDMD5 = await MD5MD5(管理员密码 + 加密秘钥);
 		const uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/;
@@ -131,7 +67,7 @@ export default {
 		} else if (管理员密码 && upgradeHeader === 'websocket') {// WebSocket代理
 			const 反代上下文 = await 反代参数获取(url, userID, 默认反代IP, 默认反代兜底);
 			log(`[WebSocket] 命中请求: ${url.pathname}${url.search}`);
-			return await 处理WS请求(request, userID, url, 反代上下文, env, ctx);
+			return await 处理WS请求(request, userID, url, 反代上下文);
 		} else if (管理员密码 && !访问路径.startsWith('admin/') && 访问路径 !== 'login' && request.method === 'POST') {// gRPC/叉HTTP代理
 			const 反代上下文 = await 反代参数获取(url, userID, 默认反代IP, 默认反代兜底);
 			const { 头: 本机Padding头, 键: 本机Padding键 } = 获取叉HTTPPadding标识(userID);
@@ -144,7 +80,7 @@ export default {
 			return await 处理叉HTTP请求(request, userID, 反代上下文);
 		} else {
 			if (url.protocol === 'http:') return Response.redirect(url.href.replace(`http://${url.hostname}`, `https://${url.hostname}`), 301);
-			if (!管理员密码) return new Response(matrixEdgeSetupNotice('ADMIN', 面板品牌名), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8', 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', 'Pragma': 'no-cache', 'Expires': '0' } });
+			if (!管理员密码) return new Response(matrixEdgeSetupNotice('ADMIN'), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8', 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', 'Pragma': 'no-cache', 'Expires': '0' } });
 			if (env.KV && typeof env.KV.get === 'function') {
 				const 区分大小写访问路径 = url.pathname.slice(1);
 				if (区分大小写访问路径 === 加密秘钥 && 加密秘钥 !== '勿动此默认密钥，有需求请自行通过添加变量KEY进行修改') {//快速订阅
@@ -166,7 +102,7 @@ export default {
 							return 响应;
 						}
 					}
-					return new Response(matrixEdgeLoginPage(面板品牌名), { status: 200, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
+					return new Response(matrixEdgeLoginPage(), { status: 200, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
 				} else if (访问路径 === 'admin' || 访问路径.startsWith('admin/')) {//验证cookie后响应管理页面
 					const cookies = request.headers.get('Cookie') || '';
 					const authCookie = cookies.split(';').find(c => c.trim().startsWith('auth='))?.split('=')[1];
@@ -281,23 +217,7 @@ export default {
 							return new Response(JSON.stringify(errorResponse, null, 2), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 						}
 					} else if (request.method === 'POST') {// 处理 KV 操作（POST 请求）
-						} else if (访问路径 === 'admin/customers.json') { // 保存客户列表
-						try {
-							const newList = await request.json();
-							if (!Array.isArray(newList)) return new Response(JSON.stringify({ error: '不支持的数据格式' }), { status: 400, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
-							for (const c of newList) {
-								if (!c.id || !c.name) return new Response(JSON.stringify({ error: 'هر مشتری باید id و name داشته باشد' }), { status: 400, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
-								c.quotaBytes = Number(c.quotaBytes) || 0;
-								c.usedBytes = Number(c.usedBytes) || 0;
-								c.enabled = c.enabled !== false;
-							}
-							await 保存客户列表(env, newList);
-							ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Save_Customers', config_JSON));
-							return new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
-						} catch (error) {
-							return new Response(JSON.stringify({ error: 'ذخیره مشتری‌ها ناموفق بود: ' + error.message }), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
-						}
-					} else if (访问路径 === 'admin/config.json') { // 保存config.json配置
+						if (访问路径 === 'admin/config.json') { // 保存config.json配置
 							try {
 								const newConfig = await request.json();
 								// 验证配置完整性
@@ -364,13 +284,6 @@ export default {
 								return new Response(JSON.stringify({ error: '保存自定义IP失败: ' + error.message }), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 							}
 						} else return new Response(JSON.stringify({ error: '不支持的POST请求路径' }), { status: 404, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
-					} else if (访问路径 === 'admin/customers.json') {// 处理 admin/customers.json 请求，返回JSON（含每个客户的节点链接）
-						const 客户列表 = await 加载客户列表(env);
-						const 带链接列表 = 客户列表.map(c => ({
-							...c,
-							link: `vless://${c.id}@${host}:443?security=tls&type=ws&host=${host}&fp=chrome&sni=${host}&path=${encodeURIComponent('/')}&encryption=none#${encodeURIComponent(c.name || 面板品牌名)}`
-						}));
-						return new Response(JSON.stringify(带链接列表, null, 2), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 					} else if (访问路径 === 'admin/config.json') {// 处理 admin/config.json 请求，返回JSON
 						return new Response(JSON.stringify(config_JSON, null, 2), { status: 200, headers: { 'Content-Type': 'application/json' } });
 					} else if (区分大小写访问路径 === 'admin/ADD.txt') {// 处理 admin/ADD.txt 请求，返回本地优选IP
@@ -382,7 +295,7 @@ export default {
 					}
 
 					ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Admin_Login', config_JSON));
-					return new Response(matrixEdgeAdminDashboard(面板品牌名, 面板频道链接), { status: 200, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
+					return new Response(matrixEdgeAdminDashboard(), { status: 200, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
 				} else if (访问路径 === 'logout' || uuidRegex.test(访问路径)) {//清除cookie并跳转到登录页面
 					const 响应 = new Response('重定向中...', { status: 302, headers: { 'Location': '/login' } });
 					响应.headers.set('Set-Cookie', 'auth=; Path=/; Max-Age=0; HttpOnly');
@@ -585,12 +498,33 @@ export default {
 					const authCookie = cookies.split(';').find(c => c.trim().startsWith('auth='))?.split('=')[1];
 					if (authCookie && authCookie == await MD5MD5(UA + 加密秘钥 + 管理员密码)) return fetch(new Request('https://speed.cloudflare.com/locations', { headers: { 'Referer': 'https://speed.cloudflare.com/' } }));
 				} else if (访问路径 === 'robots.txt') return new Response('User-agent: *\nDisallow: /', { status: 200, headers: { 'Content-Type': 'text/plain; charset=UTF-8' } });
-			} else if (!envUUID) return new Response(matrixEdgeSetupNotice('KV', 面板品牌名), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8', 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', 'Pragma': 'no-cache', 'Expires': '0' } });
+			} else if (!envUUID) return new Response(matrixEdgeSetupNotice('KV'), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8', 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', 'Pragma': 'no-cache', 'Expires': '0' } });
 		}
 
-		// Matix ITG: no more disguise/camouflage homepage — any unmatched path
-		// goes straight to the branded admin panel (or its login gate).
-		return new Response('302', { status: 302, headers: { 'Location': '/admin' } });
+		let 伪装页URL = env.URL || 'nginx';
+		if (伪装页URL && 伪装页URL !== 'nginx' && 伪装页URL !== '1101') {
+			伪装页URL = 伪装页URL.trim().replace(/\/$/, '');
+			if (!伪装页URL.match(/^https?:\/\//i)) 伪装页URL = 'https://' + 伪装页URL;
+			if (伪装页URL.toLowerCase().startsWith('http://')) 伪装页URL = 'https://' + 伪装页URL.substring(7);
+			try { const u = new URL(伪装页URL); 伪装页URL = u.protocol + '//' + u.host } catch (e) { 伪装页URL = 'nginx' }
+		}
+		if (伪装页URL === '1101') return new Response(await html1101(url.host, 访问IP), { status: 200, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
+		try {
+			const 反代URL = new URL(伪装页URL), 新请求头 = new Headers(request.headers);
+			新请求头.set('Host', 反代URL.host);
+			新请求头.set('Referer', 反代URL.origin);
+			新请求头.set('Origin', 反代URL.origin);
+			if (!新请求头.has('User-Agent') && UA && UA !== 'null') 新请求头.set('User-Agent', UA);
+			const 反代响应 = await fetch(反代URL.origin + url.pathname + url.search, { method: request.method, headers: 新请求头, body: request.body, cf: request.cf });
+			const 内容类型 = 反代响应.headers.get('content-type') || '';
+			// 只处理文本类型的响应
+			if (/text|javascript|json|xml/.test(内容类型)) {
+				const 响应内容 = (await 反代响应.text()).replaceAll(反代URL.host, url.host);
+				return new Response(响应内容, { status: 反代响应.status, headers: { ...Object.fromEntries(反代响应.headers), 'Cache-Control': 'no-store' } });
+			}
+			return 反代响应;
+		} catch (error) { }
+		return new Response(await nginx(), { status: 200, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
 	}
 };
 ///////////////////////////////////////////////////////////////////////叉HTTP传输数据///////////////////////////////////////////////
@@ -1353,27 +1287,12 @@ function 解码WS早期数据(header, token) {
 }
 
 ///////////////////////////////////////////////////////////////////////WS传输数据///////////////////////////////////////////////
-async function 处理WS请求(request, yourUUID, url, 反代上下文 = {}, env = null, ctx = null) {
-	const 候选身份表 = (env && env.KV) ? await 构建候选身份表(env, yourUUID) : new Map([[yourUUID, null]]);
-	let 匹配客户 = null, 会话已用字节 = 0, 会话起始已用字节 = 0;
+async function 处理WS请求(request, yourUUID, url, 反代上下文 = {}) {
 	const WS套接字对 = new WebSocketPair();
 	const [clientSock, serverSock] = Object.values(WS套接字对);
 	try { (/** @type {any} */ (serverSock)).accept({ allowHalfOpen: true }) }
 	catch (_) { serverSock.accept() }
 	serverSock.binaryType = 'arraybuffer';
-	const 计入用量并检查 = (增量字节) => {
-		if (!匹配客户 || !增量字节) return;
-		会话已用字节 += 增量字节;
-		记录客户用量(env, ctx, 匹配客户.id, 增量字节);
-		if (匹配客户.quotaBytes > 0 && (会话起始已用字节 + 会话已用字节) >= 匹配客户.quotaBytes) {
-			try { serverSock.close(1000, 'quota exceeded'); } catch (e) { }
-		}
-	};
-	const 原始send = serverSock.send.bind(serverSock);
-	serverSock.send = (payload) => {
-		计入用量并检查(payload?.byteLength ?? payload?.length ?? 0);
-		return 原始send(payload);
-	};
 	let remoteConnWrapper = { socket: null, connectingPromise: null, retryConnect: null, downlinkDrain: Promise.resolve() };
 	const 失效远端连接 = () => 失效TCP连接世代(remoteConnWrapper);
 	let isDnsQuery = false;
@@ -1746,9 +1665,8 @@ async function 处理WS请求(request, yourUUID, url, 反代上下文 = {}, env 
 		}
 		if (await 写入远端(chunk)) return;
 		if (判断协议类型 === '木马') {
-			const 解析结果 = 解析木马请求(chunk, 候选身份表);
+			const 解析结果 = 解析木马请求(chunk, yourUUID);
 			if (解析结果?.hasError) throw new Error(解析结果.message || 'Invalid trojan request');
-			if (解析结果.matchedCustomer && !匹配客户) { 匹配客户 = 解析结果.matchedCustomer; 会话起始已用字节 = 匹配客户.usedBytes || 0; }
 			const { port, hostname, rawClientData, isUDP } = 解析结果;
 			if (isSpeedTestSite(hostname) && 反代上下文.代理类型 === null) {
 				await 启用WS本地测速模式(serverSock, null, rawClientData);
@@ -1767,9 +1685,8 @@ async function 处理WS请求(request, yourUUID, url, 反代上下文 = {}, env 
 			判断是否是木马 = false;
 			当前块字节 = 当前块字节 || 数据转Uint8Array(chunk);
 			const bytes = 当前块字节;
-			const 解析结果 = 解析魏烈思请求(bytes, 候选身份表);
+			const 解析结果 = 解析魏烈思请求(bytes, yourUUID);
 			if (解析结果?.hasError) throw new Error(解析结果.message || 'Invalid 魏烈思 request');
-			if (解析结果.matchedCustomer && !匹配客户) { 匹配客户 = 解析结果.matchedCustomer; 会话起始已用字节 = 匹配客户.usedBytes || 0; }
 			const { port, hostname, version, isUDP, rawClientData } = 解析结果;
 			const respHeader = new Uint8Array([version, 0]);
 			if (isSpeedTestSite(hostname) && 反代上下文.代理类型 === null) {
@@ -1846,7 +1763,6 @@ async function 处理WS请求(request, yourUUID, url, 反代上下文 = {}, env 
 	};
 
 	serverSock.addEventListener('message', (event) => {
-		计入用量并检查(event.data?.byteLength ?? event.data?.length ?? 0);
 		入队WS显式传输(event.data);
 	});
 	serverSock.addEventListener('close', () => {
@@ -1939,20 +1855,15 @@ async function 转发木马UDP反代数据(chunk, webSocket, 上下文, request)
 	finally { try { writer.releaseLock() } catch (e) { } }
 }
 
-function 解析木马请求(buffer, passwordOrCandidates) {
+function 解析木马请求(buffer, passwordPlainText) {
 	const data = 数据转Uint8Array(buffer);
+	const sha224Password = sha224(passwordPlainText);
 	if (data.byteLength < 58) return { hasError: true, message: "invalid data" };
 	let crLfIndex = 56;
 	if (data[crLfIndex] !== 0x0d || data[crLfIndex + 1] !== 0x0a) return { hasError: true, message: "invalid header format" };
-	const 候选表 = passwordOrCandidates instanceof Map ? passwordOrCandidates : new Map([[passwordOrCandidates, null]]);
-	let matchedUUID = null, matchedCustomer = null;
-	for (const [候选密码, 客户记录] of 候选表) {
-		const sha224Password = sha224(候选密码);
-		let ok = true;
-		for (let i = 0; i < crLfIndex; i++) { if (data[i] !== sha224Password.charCodeAt(i)) { ok = false; break; } }
-		if (ok) { matchedUUID = 候选密码; matchedCustomer = 客户记录; break; }
+	for (let i = 0; i < crLfIndex; i++) {
+		if (data[i] !== sha224Password.charCodeAt(i)) return { hasError: true, message: "invalid password" };
 	}
-	if (!matchedUUID) return { hasError: true, message: "invalid password" };
 
 	const socks5Index = crLfIndex + 2;
 	if (data.byteLength < socks5Index + 6) return { hasError: true, message: "invalid S5 request data" };
@@ -2006,8 +1917,7 @@ function 解析木马请求(buffer, passwordOrCandidates) {
 		port: portRemote,
 		hostname: address,
 		isUDP,
-		rawClientData: data.subarray(portIndex + 4),
-		matchedUUID, matchedCustomer
+		rawClientData: data.subarray(portIndex + 4)
 	};
 }
 
@@ -2051,17 +1961,12 @@ function UUID字节匹配(data, offset, uuid) {
 	return true;
 }
 
-function 解析魏烈思请求(chunk, tokenOrCandidates) {
+function 解析魏烈思请求(chunk, token) {
 	const data = 数据转Uint8Array(chunk);
 	const length = data.byteLength;
 	if (length < 24) return { hasError: true, message: 'Invalid data' };
 	const version = data[0];
-	const 候选表 = tokenOrCandidates instanceof Map ? tokenOrCandidates : new Map([[tokenOrCandidates, null]]);
-	let matchedUUID = null, matchedCustomer = null;
-	for (const [候选UUID, 客户记录] of 候选表) {
-		if (UUID字节匹配(data, 1, 候选UUID)) { matchedUUID = 候选UUID; matchedCustomer = 客户记录; break; }
-	}
-	if (!matchedUUID) return { hasError: true, message: 'Invalid uuid' };
+	if (!UUID字节匹配(data, 1, token)) return { hasError: true, message: 'Invalid uuid' };
 
 	const optLen = data[17];
 	const cmdIndex = 18 + optLen;
@@ -2103,7 +2008,7 @@ function 解析魏烈思请求(chunk, tokenOrCandidates) {
 	}
 	if (!hostname) return { hasError: true, message: `Invalid address: ${addressType}` };
 	const rawIndex = addrValIdx + addrLen;
-	return { hasError: false, addressType, port, hostname, isUDP, rawClientData: data.subarray(rawIndex), version, matchedUUID, matchedCustomer };
+	return { hasError: false, addressType, port, hostname, isUDP, rawClientData: data.subarray(rawIndex), version };
 }
 
 const SS支持加密配置 = {
@@ -6725,17 +6630,17 @@ async function html1101(host, 访问IP) {
 }
 
 // ============================================================
-// Matix ITG — theme functions (self-hosted, no external fetch)
+// Matrix Edge — theme functions (self-hosted, no external fetch)
 // ============================================================
 
-function matrixEdgeSetupNotice(kind, brand = 'Matix ITG') {
+function matrixEdgeSetupNotice(kind) {
 	const isAdmin = kind === 'ADMIN';
 	return `<!DOCTYPE html>
 <html lang="fa" dir="rtl" data-lang="fa">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${brand} — Setup Required</title>
+<title>Matrix Edge — Setup Required</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&family=Inter:wght@400;600;800&display=swap');
   :root{ --purple:#8b5cf6; --purple-2:#a855f7; --pink:#c026d3; --bg-0:#05010c; --text:#e9e4ff; --muted:#9c93c9; }
@@ -6757,12 +6662,10 @@ function matrixEdgeSetupNotice(kind, brand = 'Matix ITG') {
     border:1px solid rgba(168,85,247,.35); border-radius:20px; padding:34px 30px; backdrop-filter:blur(14px);
     box-shadow:0 0 0 1px rgba(168,85,247,.08), 0 20px 60px -10px rgba(88,28,135,.55);}
   .brand{display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:16px;}
-  .bismillah{text-align:center; font-size:12.5px; color:#c9bdf0; letter-spacing:.5px; margin-bottom:10px; opacity:.9;}
-  .logo{width:32px; height:32px; border-radius:9px; transform-style:preserve-3d; perspective:200px;
+  .logo{width:32px; height:32px; border-radius:9px;
     background:conic-gradient(from 180deg, var(--purple), var(--pink), var(--purple-2), var(--purple));
-    box-shadow:0 0 20px rgba(168,85,247,.7), inset 0 2px 4px rgba(255,255,255,.35), inset 0 -3px 6px rgba(0,0,0,.5);
-    animation:spin3d 6s linear infinite;}
-  @keyframes spin3d{to{transform:rotateY(360deg) rotateX(8deg)}}
+    box-shadow:0 0 20px rgba(168,85,247,.7); animation:spin 6s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .title{font-weight:800; font-size:19px; background:linear-gradient(90deg,#fff,var(--purple-2));
     -webkit-background-clip:text; background-clip:text; color:transparent;}
   h1{font-size:17px; margin-bottom:10px; color:#fff;}
@@ -6780,8 +6683,8 @@ function matrixEdgeSetupNotice(kind, brand = 'Matix ITG') {
   <div class="bg"><div class="orb orb1"></div><div class="orb orb2"></div></div>
   <button class="langtoggle" id="langBtn">EN</button>
   <div class="wrap"><div class="card">
-    <div class="bismillah">به نام خدا 🕊️</div>
-    <div class="brand"><div class="logo"></div><div class="title">${brand}</div></div>
+    <div class="brand"><div class="logo"></div><div class="title">Matrix Edge</div></div>
+    ${isAdmin ? `
     <h1><span data-fa>تنظیمات ناقص است</span><span data-en>Setup incomplete</span></h1>
     <p><span data-fa>متغیر محیطی <code>ADMIN</code> تنظیم نشده. برو به Settings → Variables and Secrets و یک رمز عبور برای <code>ADMIN</code> تعریف کن، سپس دوباره Deploy کن.</span>
        <span data-en>The <code>ADMIN</code> environment variable is not set. Go to Settings → Variables and Secrets, add a password for <code>ADMIN</code>, then redeploy.</span></p>
@@ -6806,18 +6709,18 @@ function matrixEdgeSetupNotice(kind, brand = 'Matix ITG') {
 }
 
 // ============================================================
-// Matix ITG — Login Page (self-hosted, no external fetch)
+// Matrix Edge — Login Page (self-hosted, no external fetch)
 // Bilingual (FA default / EN), purple-black glow theme, animated background
 // Drop this function anywhere in your _worker.js (outside the fetch handler)
 // ============================================================
 
-function matrixEdgeLoginPage(brand = 'Matix ITG') {
+function matrixEdgeLoginPage() {
 	return `<!DOCTYPE html>
 <html lang="fa" dir="rtl" data-lang="fa">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>${brand}</title>
+<title>Matrix Edge</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🟣</text></svg>">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&family=Inter:wght@400;600;800&display=swap');
@@ -6868,12 +6771,10 @@ function matrixEdgeLoginPage(brand = 'Matix ITG') {
     box-shadow:0 0 0 1px rgba(168,85,247,.08), 0 20px 60px -10px rgba(88,28,135,.55), 0 0 40px -8px rgba(192,38,211,.35);
   }
   .brand{display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:6px;}
-  .bismillah{text-align:center; font-size:12.5px; color:#c9bdf0; letter-spacing:.5px; margin-bottom:12px; opacity:.9;}
-  .logo{width:38px; height:38px; border-radius:10px; transform-style:preserve-3d; perspective:200px;
+  .logo{width:38px; height:38px; border-radius:10px;
     background:conic-gradient(from 180deg, var(--purple), var(--pink), var(--purple-2), var(--purple));
-    box-shadow:0 0 22px rgba(168,85,247,.75), inset 0 2px 4px rgba(255,255,255,.35), inset 0 -3px 6px rgba(0,0,0,.5);
-    animation:spin3d 6s linear infinite;}
-  @keyframes spin3d{to{transform:rotateY(360deg) rotateX(8deg)}}
+    box-shadow:0 0 22px rgba(168,85,247,.75); animation:spin 6s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .title{font-weight:800; font-size:22px; letter-spacing:.5px;
     background:linear-gradient(90deg,#fff,var(--purple-2)); -webkit-background-clip:text; background-clip:text; color:transparent;}
   .subtitle{text-align:center; color:var(--muted); font-size:13px; margin:2px 0 26px;}
@@ -6921,8 +6822,7 @@ function matrixEdgeLoginPage(brand = 'Matix ITG') {
 
   <div class="wrap">
     <div class="card">
-      <div class="bismillah">به نام خدا 🕊️</div>
-      <div class="brand"><div class="logo"></div><div class="title">${brand}</div></div>
+      <div class="brand"><div class="logo"></div><div class="title">Matrix Edge</div></div>
       <div class="subtitle">
         <span data-fa>ورود به پنل مدیریت</span>
         <span data-en>Sign in to your dashboard</span>
@@ -7008,19 +6908,19 @@ function matrixEdgeLoginPage(brand = 'Matix ITG') {
 // ------------------------------------------------------------
 
 // ============================================================
-// Matix ITG — Native Admin Dashboard
+// Matrix Edge — Native Admin Dashboard
 // Talks directly to this worker's own API (/admin/config.json,
 // /admin/ADD.txt, /admin/log.json, /admin/init) — same-origin,
 // no iframe, so the theme + Persian/English labels apply fully.
 // ============================================================
 
-function matrixEdgeAdminDashboard(brand = 'Matix ITG', tgChannel = 'https://t.me/Imatix7') {
+function matrixEdgeAdminDashboard() {
 	return `<!DOCTYPE html>
 <html lang="fa" dir="rtl" data-lang="fa">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${brand} — Dashboard</title>
+<title>Matrix Edge — Dashboard</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;800&family=Inter:wght@400;500;600;800&display=swap');
   :root{ --purple:#8b5cf6; --purple-2:#a855f7; --pink:#c026d3; --bg-0:#05010c; --card:#0f0920; --text:#e9e4ff; --muted:#9c93c9; --green:#34d399; --red:#f87171; }
@@ -7036,26 +6936,20 @@ function matrixEdgeAdminDashboard(brand = 'Matix ITG', tgChannel = 'https://t.me
   @keyframes f1{0%,100%{transform:translate(0,0)}50%{transform:translate(4vw,5vh)}}
   @keyframes f2{0%,100%{transform:translate(0,0)}50%{transform:translate(-4vw,-4vh)}}
 
-  .bismillah-bar{position:relative; z-index:2; text-align:center; font-size:12px; color:#c9bdf0;
-    letter-spacing:.5px; padding:6px 0; opacity:.9; background:rgba(12,5,24,.5);}
   header{position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between;
     padding:14px 22px; background:rgba(12,5,24,.7); border-bottom:1px solid rgba(168,85,247,.3); backdrop-filter:blur(10px);
-    position:sticky; top:0; perspective:800px; box-shadow:0 6px 20px -8px rgba(88,28,135,.6);}
-  .brand{display:flex; align-items:center; gap:10px; transform-style:preserve-3d; transition:transform .3s;}
-  .brand:hover{transform:rotateX(6deg) translateZ(6px);}
-  .logo{width:28px; height:28px; border-radius:8px; transform-style:preserve-3d; perspective:200px;
+    position:sticky; top:0;}
+  .brand{display:flex; align-items:center; gap:10px;}
+  .logo{width:28px; height:28px; border-radius:8px;
     background:conic-gradient(from 180deg, var(--purple), var(--pink), var(--purple-2), var(--purple));
-    box-shadow:0 0 16px rgba(168,85,247,.75), inset 0 2px 3px rgba(255,255,255,.35), inset 0 -3px 5px rgba(0,0,0,.5);
-    animation:spin3d 6s linear infinite;}
-  @keyframes spin3d{to{transform:rotateY(360deg) rotateX(8deg)}}
+    box-shadow:0 0 16px rgba(168,85,247,.75); animation:spin 6s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .brand-name{font-weight:800; font-size:17px; background:linear-gradient(90deg,#fff,var(--purple-2));
     -webkit-background-clip:text; background-clip:text; color:transparent;}
-  .actions{display:flex; align-items:center; gap:10px; transform-style:preserve-3d;}
+  .actions{display:flex; align-items:center; gap:10px;}
   button.chip{background:rgba(255,255,255,.06); border:1px solid rgba(168,85,247,.35); color:var(--text);
-    border-radius:999px; padding:7px 14px; font-size:12px; cursor:pointer; transform-style:preserve-3d;
-    box-shadow:0 3px 0 rgba(88,28,135,.5), 0 5px 12px -4px rgba(0,0,0,.5); transition:transform .15s, box-shadow .15s;}
-  button.chip:hover{border-color:var(--purple-2); transform:translateY(-2px) translateZ(4px); box-shadow:0 5px 0 rgba(88,28,135,.5), 0 8px 16px -4px rgba(0,0,0,.55);}
-  button.chip:active{transform:translateY(1px) translateZ(0); box-shadow:0 1px 0 rgba(88,28,135,.5);}
+    border-radius:999px; padding:7px 14px; font-size:12px; cursor:pointer;}
+  button.chip:hover{border-color:var(--purple-2);}
   button.chip.danger{border-color:rgba(248,113,113,.45); color:#fda4a4;}
 
   main{position:relative; z-index:2; max-width:840px; margin:0 auto; padding:20px 16px 60px;}
@@ -7102,53 +6996,9 @@ function matrixEdgeAdminDashboard(brand = 'Matix ITG', tgChannel = 'https://t.me
   .toast.err{border-color:rgba(248,113,113,.5);}
 
   .loglist{max-height:220px; overflow:auto; font-family:monospace; font-size:11.5px; direction:ltr; text-align:left; color:var(--muted);}
-  .crow{border:1px solid rgba(168,85,247,.25); border-radius:12px; padding:12px 14px; margin-top:12px; background:rgba(255,255,255,.02);}
-  .crow-top{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
-  .crow-name{font-weight:700; font-size:13.5px; color:#fff;}
-  .badge{font-size:11px; padding:3px 9px; border-radius:999px; font-weight:600;}
-  .badge.ok{background:rgba(52,211,153,.15); color:var(--green); border:1px solid rgba(52,211,153,.35);}
-  .badge.bad{background:rgba(248,113,113,.15); color:var(--red); border:1px solid rgba(248,113,113,.35);}
-  .bar{height:6px; border-radius:4px; background:rgba(255,255,255,.08); margin-top:8px; overflow:hidden;}
-  .bar-fill{height:100%; background:linear-gradient(90deg, var(--purple), var(--pink));}
-  .crow-meta{font-size:11.5px; color:var(--muted); margin-top:6px; direction:ltr; text-align:left;}
-  .crow-actions{display:flex; gap:8px; margin-top:10px;}
-  .crow-actions .copy{padding:0 12px; height:30px; font-size:11.5px;}
-  .crow-actions .del{background:rgba(248,113,113,.12); border:1px solid rgba(248,113,113,.35); color:#fda4a4;
-    border-radius:10px; padding:0 12px; height:30px; font-size:11.5px; cursor:pointer;}
   .loglist div{padding:6px 0; border-bottom:1px solid rgba(255,255,255,.05);}
   .skel{opacity:.5;}
   .muted{color:var(--muted); font-size:12px; margin-top:4px;}
-
-  .modal-backdrop{position:fixed; inset:0; z-index:80; background:rgba(3,1,8,.75); backdrop-filter:blur(6px);
-    display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .25s;}
-  .modal-backdrop.show{opacity:1; pointer-events:auto;}
-  .modal-box{max-width:380px; width:100%; background:linear-gradient(180deg, rgba(24,12,46,.92), rgba(10,4,22,.96));
-    border:1px solid rgba(168,85,247,.4); border-radius:18px; padding:28px 24px; text-align:center;
-    box-shadow:0 0 0 1px rgba(168,85,247,.1), 0 25px 70px -15px rgba(88,28,135,.7); transform:translateY(10px) scale(.97); transition:transform .25s;}
-  .modal-backdrop.show .modal-box{transform:translateY(0) scale(1);}
-  .modal-logo{font-size:34px; margin-bottom:8px;}
-  .modal-box h3{color:#fff; font-size:16.5px; margin-bottom:10px;}
-  .modal-box p{color:var(--muted); font-size:13px; line-height:1.8; margin-bottom:18px;}
-  .modal-cta{display:block; background:linear-gradient(90deg, #6d28d9, #a855f7, #c026d3); background-size:200% 100%;
-    color:#fff; text-decoration:none; font-weight:700; font-size:13.5px; padding:12px; border-radius:12px;
-    box-shadow:0 8px 22px -6px rgba(139,92,246,.6); transition:background-position .3s;}
-  .modal-cta:hover{background-position:100% 0;}
-  .modal-skip{margin-top:12px; background:transparent; border:none; color:var(--muted); font-size:12.5px; cursor:pointer;}
-  .modal-skip:hover{color:var(--text);}
-
-  .tour-overlay{position:fixed; inset:0; z-index:90; display:none;}
-  .tour-overlay.show{display:block;}
-  .tour-hole{position:absolute; border-radius:14px; box-shadow:0 0 0 4000px rgba(3,1,8,.78), 0 0 0 3px var(--purple-2), 0 0 24px 4px rgba(168,85,247,.6);
-    transition:all .35s ease; pointer-events:none;}
-  .tour-tip{position:absolute; max-width:280px; background:linear-gradient(180deg, rgba(24,12,46,.97), rgba(10,4,22,.98));
-    border:1px solid rgba(168,85,247,.4); border-radius:14px; padding:16px; box-shadow:0 20px 50px -12px rgba(0,0,0,.7); transition:all .35s ease;}
-  .tour-tip-text{font-size:13px; line-height:1.8; color:var(--text); margin-bottom:12px;}
-  .tour-tip-row{display:flex; align-items:center; justify-content:space-between; gap:10px;}
-  .tour-dots{display:flex; gap:5px;}
-  .tour-dots span{width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.2);}
-  .tour-dots span.active{background:var(--purple-2); box-shadow:0 0 6px var(--purple-2);}
-  .tour-btns{display:flex; gap:8px;}
-  .tour-btns button{padding:6px 14px; font-size:12px; border-radius:9px;}
 
   [data-en]{display:none;}
   html[data-lang="en"] [data-fa]{display:none;}
@@ -7158,9 +7008,8 @@ function matrixEdgeAdminDashboard(brand = 'Matix ITG', tgChannel = 'https://t.me
 <body>
   <div class="bg"><div class="orb orb1"></div><div class="orb orb2"></div></div>
 
-  <div class="bismillah-bar">به نام خدا 🕊️</div>
   <header>
-    <div class="brand"><div class="logo"></div><div class="brand-name">${brand}</div></div>
+    <div class="brand"><div class="logo"></div><div class="brand-name">Matrix Edge</div></div>
     <div class="actions">
       <button class="chip" id="langBtn">EN</button>
       <button class="chip danger" id="resetBtn"><span data-fa>ریست تنظیمات</span><span data-en>Reset config</span></button>
@@ -7262,44 +7111,14 @@ function matrixEdgeAdminDashboard(brand = 'Matix ITG', tgChannel = 'https://t.me
 
     <div class="card">
       <h2><span class="dot"></span><span data-fa>لیست IP دلخواه</span><span data-en>Custom preferred IPs</span></h2>
-
-      <div class="field">
-        <label><span data-fa>دریافت خودکار از مخزن رایگان</span><span data-en>Auto-fetch from a free IP repository</span></label>
-        <div class="linkbox">
-          <input type="text" id="f_ipsource" value="https://raw.githubusercontent.com/cmliu/WorkerVless2sub/main/addressesapi.txt">
-          <button class="copy" id="fetchIpsBtn"><span data-fa>دریافت IP</span><span data-en>Fetch IPs</span></button>
-        </div>
-        <p class="muted"><span data-fa>منبع پیش‌فرض رایگانه و مرتب آپدیت می‌شه؛ می‌تونی هر منبع دیگه‌ای هم اینجا بذاری</span><span data-en>The default source is free and regularly updated; you can paste any other source URL here too</span></p>
-      </div>
-
       <p class="muted"><span data-fa>هر خط یک IP یا دامنه (با پورت اختیاری، مثال: 1.2.3.4:443#remark) — خالی گذاشتنش لیست فعلی رو دست‌نخورده نگه می‌داره</span><span data-en>One IP or domain per line (optional port, e.g. 1.2.3.4:443#remark) — leaving this empty keeps the current list untouched</span></p>
       <textarea id="f_addlist" placeholder="1.2.3.4:443#NL&#10;5.6.7.8:2053#DE"></textarea>
-    </div>
-
-    <div class="card">
-      <h2><span class="dot"></span><span data-fa>مشتری‌ها (سهمیه/انقضا)</span><span data-en>Customers (quota/expiry)</span></h2>
-      <p class="muted">
-        <span data-fa>هر مشتری لینک تک‌نود اختصاصی خودش رو داره. وقتی حجمش تموم بشه یا تاریخش بگذره، همون لینک خودکار قطع می‌شه. دقت حجم تقریبیه (batch‌شده هر ۵۱۲ کیلوبایت) و فقط روی پروتکل WebSocket فعاله.</span>
-        <span data-en>Each customer gets their own single-node link. Once their quota or expiry date is hit, that link stops working automatically. Volume tracking is approximate (batched every 512KB) and only enforced on the WebSocket transport.</span>
-      </p>
-
-      <div class="grid2">
-        <div class="field"><label><span data-fa>نام مشتری</span><span data-en>Customer name</span></label><input type="text" id="c_name" placeholder="Ali"></div>
-        <div class="field"><label><span data-fa>حجم (گیگابایت، ۰=نامحدود)</span><span data-en>Quota (GB, 0=unlimited)</span></label><input type="text" id="c_quota" placeholder="10"></div>
-        <div class="field"><label><span data-fa>تاریخ انقضا (خالی=نامحدود)</span><span data-en>Expiry date (empty=unlimited)</span></label><input type="text" id="c_expiry" placeholder="2026-12-31"></div>
-        <div class="field" style="display:flex; align-items:flex-end;">
-          <button class="primary" id="addCustomerBtn" style="width:100%;"><span data-fa>+ افزودن مشتری</span><span data-en>+ Add customer</span></button>
-        </div>
-      </div>
-
-      <div id="customerList"></div>
     </div>
 
     <div class="card">
       <h2><span class="dot"></span><span data-fa>لاگ‌های اخیر</span><span data-en>Recent logs</span></h2>
       <div class="loglist skel" id="logBox">…</div>
     </div>
-
 
     <div class="save-bar">
       <button class="ghost" id="reloadBtn"><span data-fa>بارگذاری مجدد</span><span data-en>Reload</span></button>
@@ -7309,32 +7128,6 @@ function matrixEdgeAdminDashboard(brand = 'Matix ITG', tgChannel = 'https://t.me
   </main>
 
   <div class="toast" id="toast"></div>
-
-  <div class="modal-backdrop" id="tgModal">
-    <div class="modal-box">
-      <div class="modal-logo">🕊️</div>
-      <h3><span data-fa>به ${brand} خوش اومدی</span><span data-en>Welcome to ${brand}</span></h3>
-      <p><span data-fa>برای دریافت آپدیت‌ها، لینک‌های تازه و اطلاعیه‌ها، عضو کانال بشو:</span>
-         <span data-en>Join our channel for updates, fresh links and announcements:</span></p>
-      <a href="${tgChannel}" target="_blank" rel="noopener" class="modal-cta"><span data-fa>عضویت در کانال</span><span data-en>Join channel</span></a>
-      <button class="modal-skip" id="tgSkip"><span data-fa>فعلاً نه</span><span data-en>Not now</span></button>
-    </div>
-  </div>
-
-  <div class="tour-overlay" id="tourOverlay">
-    <div class="tour-hole" id="tourHole"></div>
-    <div class="tour-tip" id="tourTip">
-      <div class="tour-tip-text" id="tourText"></div>
-      <div class="tour-tip-row">
-        <div class="tour-dots" id="tourDots"></div>
-        <div class="tour-btns">
-          <button class="ghost" id="tourSkipBtn"><span data-fa>رد شدن</span><span data-en>Skip</span></button>
-          <button class="primary" id="tourNextBtn"><span data-fa>بعدی</span><span data-en>Next</span></button>
-        </div>
-      </div>
-    </div>
-  </div>
-
 
 <script>
   const root = document.documentElement;
@@ -7381,86 +7174,8 @@ function matrixEdgeAdminDashboard(brand = 'Matix ITG', tgChannel = 'https://t.me
       document.getElementById('f_socks_global').checked = !!c.反代?.SOCKS5?.全局;
       loadAddList();
       loadLogs();
-      loadCustomers();
     }catch(e){ toast(faOn() ? 'خطا در بارگذاری تنظیمات' : 'Failed to load settings', true); }
   }
-
-  let customers = [];
-  function fmtBytes(n){
-    if (!n || n <= 0) return '0 GB';
-    return (n / 1e9).toFixed(2) + ' GB';
-  }
-  async function loadCustomers(){
-    const box = document.getElementById('customerList');
-    try{
-      const res = await fetch('/admin/customers.json', { credentials: 'same-origin' });
-      customers = res.ok ? await res.json() : [];
-      renderCustomers();
-    }catch(e){ box.innerHTML = faOn() ? 'خطا در بارگذاری مشتری‌ها' : 'Failed to load customers'; }
-  }
-  function renderCustomers(){
-    const box = document.getElementById('customerList');
-    if (!customers.length){ box.innerHTML = '<p class="muted" style="margin-top:12px;">' + (faOn() ? 'هنوز مشتری‌ای اضافه نشده' : 'No customers yet') + '</p>'; return; }
-    const today = new Date().toISOString().slice(0,10);
-    box.innerHTML = customers.map((c, i) => {
-      const expired = c.expiry && today > c.expiry;
-      const overQuota = c.quotaBytes > 0 && (c.usedBytes||0) >= c.quotaBytes;
-      const bad = expired || overQuota || c.enabled === false;
-      const pct = c.quotaBytes > 0 ? Math.min(100, Math.round((c.usedBytes||0) / c.quotaBytes * 100)) : 0;
-      const statusFa = expired ? 'منقضی شده' : overQuota ? 'حجم تمام شده' : (c.enabled===false ? 'غیرفعال' : 'فعال');
-      const statusEn = expired ? 'Expired' : overQuota ? 'Quota exceeded' : (c.enabled===false ? 'Disabled' : 'Active');
-      return '<div class="crow">'
-        + '<div class="crow-top"><div class="crow-name">' + (c.name||'') + '</div>'
-        + '<span class="badge ' + (bad?'bad':'ok') + '">' + (faOn()?statusFa:statusEn) + '</span></div>'
-        + (c.quotaBytes > 0 ? ('<div class="bar"><div class="bar-fill" style="width:' + pct + '%"></div></div>') : '')
-        + '<div class="crow-meta">' + fmtBytes(c.usedBytes||0) + ' / ' + (c.quotaBytes>0? fmtBytes(c.quotaBytes) : (faOn()?'نامحدود':'unlimited'))
-        + (c.expiry ? ('  ·  ' + (faOn()?'انقضا: ':'expires: ') + c.expiry) : '') + '</div>'
-        + '<div class="linkbox" style="margin-top:10px;"><input type="text" readonly value="' + (c.link||'') + '" id="clink_' + i + '"></div>'
-        + '<div class="crow-actions">'
-        + '<button class="copy" data-clink="clink_' + i + '"><span data-fa>کپی لینک</span><span data-en>Copy link</span></button>'
-        + '<button class="del" data-delidx="' + i + '"><span data-fa>حذف</span><span data-en>Delete</span></button>'
-        + '</div></div>';
-    }).join('');
-    box.querySelectorAll('[data-clink]').forEach(btn => btn.addEventListener('click', async () => {
-      const el = document.getElementById(btn.dataset.clink);
-      try{ await navigator.clipboard.writeText(el.value); toast(faOn()?'کپی شد':'Copied'); }
-      catch(e){ el.select(); document.execCommand('copy'); toast(faOn()?'کپی شد':'Copied'); }
-    }));
-    box.querySelectorAll('[data-delidx]').forEach(btn => btn.addEventListener('click', async () => {
-      const idx = Number(btn.dataset.delidx);
-      const ok = confirm(faOn() ? 'این مشتری حذف بشه؟' : 'Delete this customer?');
-      if (!ok) return;
-      customers.splice(idx, 1);
-      await saveCustomers();
-    }));
-  }
-  async function saveCustomers(){
-    try{
-      const res = await fetch('/admin/customers.json', {
-        method: 'POST', credentials: 'same-origin',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(customers)
-      });
-      if (!res.ok) throw new Error();
-      toast(faOn() ? 'ذخیره شد' : 'Saved');
-      loadCustomers();
-    }catch(e){ toast(faOn() ? 'ذخیره مشتری‌ها ناموفق بود' : 'Failed to save customers', true); }
-  }
-  document.getElementById('addCustomerBtn').onclick = async () => {
-    const name = document.getElementById('c_name').value.trim();
-    const quotaGB = parseFloat(document.getElementById('c_quota').value) || 0;
-    const expiry = document.getElementById('c_expiry').value.trim();
-    if (!name) { toast(faOn() ? 'اسم مشتری رو بنویس' : 'Enter a customer name', true); return; }
-    customers.push({
-      id: crypto.randomUUID(),
-      name, quotaBytes: Math.round(quotaGB * 1e9), usedBytes: 0,
-      expiry: expiry || null, enabled: true, createdAt: new Date().toISOString()
-    });
-    document.getElementById('c_name').value = '';
-    document.getElementById('c_quota').value = '';
-    document.getElementById('c_expiry').value = '';
-    await saveCustomers();
-  };
 
   async function loadAddList(){
     // The server returns auto-generated random IPs when no manual list has been
@@ -7491,29 +7206,6 @@ function matrixEdgeAdminDashboard(brand = 'Matix ITG', tgChannel = 'https://t.me
   });
 
   document.getElementById('reloadBtn').onclick = loadConfig;
-
-  document.getElementById('fetchIpsBtn').onclick = async () => {
-    const src = document.getElementById('f_ipsource').value.trim();
-    if (!src) { toast(faOn() ? 'آدرس منبع رو وارد کن' : 'Enter a source URL', true); return; }
-    const btn = document.getElementById('fetchIpsBtn');
-    const original = btn.innerHTML;
-    btn.innerHTML = faOn() ? 'در حال دریافت…' : 'Fetching…';
-    btn.disabled = true;
-    try{
-      const res = await fetch('/admin/getADDAPI?url=' + encodeURIComponent(src), { credentials: 'same-origin' });
-      const data = await res.json();
-      if (!data.success || !Array.isArray(data.data) || !data.data.length) throw new Error('empty');
-      const box = document.getElementById('f_addlist');
-      const existing = box.value.trim();
-      const fetched = data.data.join('\\n');
-      box.value = existing ? (existing + '\\n' + fetched) : fetched;
-      toast(faOn() ? data.data.length + ' آی‌پی دریافت شد — یادت نره ذخیره کنی' : data.data.length + ' IPs fetched — remember to Save');
-    }catch(e){
-      toast(faOn() ? 'دریافت از این منبع ناموفق بود' : 'Fetching from this source failed', true);
-    }finally{
-      btn.disabled = false; btn.innerHTML = original;
-    }
-  };
 
   document.getElementById('resetBtn').onclick = async () => {
     const ok = confirm(faOn() ? 'مطمئنی می‌خوای همه‌ی تنظیمات به حالت پیش‌فرض برگردن؟' : 'Reset all settings to default?');
@@ -7576,79 +7268,6 @@ function matrixEdgeAdminDashboard(brand = 'Matix ITG', tgChannel = 'https://t.me
   };
 
   loadConfig();
-
-  // ---- Telegram channel join modal (shown once) ----
-  (function initTgModal(){
-    const modal = document.getElementById('tgModal');
-    const skip = document.getElementById('tgSkip');
-    if (!localStorage.getItem('me_tg_seen')) {
-      setTimeout(() => modal.classList.add('show'), 400);
-    }
-    function close(){ modal.classList.remove('show'); localStorage.setItem('me_tg_seen', '1'); }
-    skip.onclick = close;
-    modal.addEventListener('click', (e) => { if (e.target === modal) close(); });
-    document.querySelector('.modal-cta').addEventListener('click', close);
-  })();
-
-  // ---- Guided, step-by-step tour ----
-  (function initTour(){
-    const steps = [
-      { sel: '#subLink', fa: 'این لینک ساب‌اسکریپشنه. همینو کپی کن و توی برنامه‌ی کلاینتت (v2rayN، Shadowrocket، Hiddify و…) به‌عنوان لینک اشتراک وارد کن.', en: 'This is your subscription link. Copy it and add it as a subscription URL in your client app (v2rayN, Shadowrocket, Hiddify, etc).' },
-      { sel: '#nodeLink', fa: 'این هم لینک تک‌نوده — اگه فقط یه سرور می‌خوای بدون ساب‌اسکریپشن، همینو استفاده کن.', en: 'This is the single-node link — use this if you just want one server without a subscription.' },
-      { sel: '#f_subname', fa: 'اسمی که توی برنامه‌ی کلاینت برای این کانفیگ نشون داده می‌شه رو اینجا تنظیم کن.', en: 'Set the name shown for this config inside your client app here.' },
-      { sel: '#f_proxyip', fa: 'اگه نمی‌دونی چیه، دستش نزن — روی "auto" بذار بمونه.', en: "If you're not sure what this is, leave it as \"auto\"." },
-      { sel: '#f_ipsource', fa: 'با زدن دکمه‌ی کنارش، از یه مخزن رایگان IP می‌گیری و به لیست پایین اضافه می‌شه.', en: 'Click the button next to it to pull IPs from a free repository into the list below.' },
-      { sel: '#addCustomerBtn', fa: 'برای هر مشتری با حجم و تاریخ انقضای مخصوص خودش، از همینجا اضافه‌ش کن.', en: 'Add each customer with their own quota and expiry date from here.' },
-      { sel: '#saveBtn', fa: 'یادت نره در آخر روی ذخیره‌ی تغییرات بزنی!', en: "Don't forget to click Save changes at the end!" }
-    ];
-    let idx = 0;
-    const overlay = document.getElementById('tourOverlay');
-    const hole = document.getElementById('tourHole');
-    const tip = document.getElementById('tourTip');
-    const text = document.getElementById('tourText');
-    const dots = document.getElementById('tourDots');
-    const nextBtn = document.getElementById('tourNextBtn');
-    const skipBtn = document.getElementById('tourSkipBtn');
-
-    function place(){
-      const step = steps[idx];
-      const el = document.querySelector(step.sel);
-      if (!el) { idx++; return idx < steps.length ? place() : end(); }
-      const r = el.getBoundingClientRect();
-      const pad = 8;
-      hole.style.left = (r.left - pad) + 'px';
-      hole.style.top = (r.top - pad) + 'px';
-      hole.style.width = (r.width + pad * 2) + 'px';
-      hole.style.height = (r.height + pad * 2) + 'px';
-      text.innerHTML = '<span data-fa>' + step.fa + '</span><span data-en>' + step.en + '</span>';
-      let tipTop = r.bottom + 16;
-      if (tipTop + 140 > window.innerHeight) tipTop = Math.max(16, r.top - 156);
-      let tipLeft = Math.min(Math.max(16, r.left), window.innerWidth - 296);
-      tip.style.top = tipTop + 'px';
-      tip.style.left = tipLeft + 'px';
-      dots.innerHTML = steps.map((_, i) => '<span class="' + (i===idx?'active':'') + '"></span>').join('');
-      nextBtn.innerHTML = idx === steps.length - 1
-        ? '<span data-fa>پایان</span><span data-en>Finish</span>'
-        : '<span data-fa>بعدی</span><span data-en>Next</span>';
-      el.scrollIntoView({ block: 'center', behavior: 'smooth' });
-    }
-    function start(){ idx = 0; overlay.classList.add('show'); place(); }
-    function end(){ overlay.classList.remove('show'); localStorage.setItem('me_tour_seen', '1'); }
-    nextBtn.onclick = () => { idx++; if (idx >= steps.length) end(); else place(); };
-    skipBtn.onclick = end;
-    window.addEventListener('resize', () => { if (overlay.classList.contains('show')) place(); });
-
-    // expose a manual re-run button in the header actions
-    const helpBtn = document.createElement('button');
-    helpBtn.className = 'chip';
-    helpBtn.innerHTML = '<span data-fa>راهنما</span><span data-en>Help</span>';
-    helpBtn.onclick = start;
-    document.querySelector('header .actions').prepend(helpBtn);
-
-    if (!localStorage.getItem('me_tour_seen')) {
-      setTimeout(start, localStorage.getItem('me_tg_seen') ? 500 : 1600);
-    }
-  })();
 </script>
 </body>
 </html>`;
