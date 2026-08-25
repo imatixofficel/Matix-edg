@@ -1,18 +1,9 @@
-name = "ADMIN"
-main = "_worker.js"
-compatibility_date = "2026-08-23"
-workers_dev = true
+# این فایل رو دقیقاً به اسم "wrangler.toml" توی ریشه‌ی ریپازیتوری بساز
 
-# Create a KV namespace in Cloudflare and replace the placeholder IDs below.
+name = "matix-itg"
+main = "worker.js"
+compatibility_date = "2026-08-25"
+
 [[kv_namespaces]]
 binding = "KV"
-id = "bcece1711ddc47c385b84a2a0868b086"
-preview_id = "REPLACE_WITH_KV_PREVIEW_NAMESPACE_ID"
-
-[vars]
-# Set these as Cloudflare Worker secrets/variables rather than committing real values.
-# ADMIN = "change-me"
-# UUID = "00000000-0000-4000-8000-000000000000"
-# KEY = "change-me"
-# HOST = "example.com"
-# URL = "nginx"
+id = ""
