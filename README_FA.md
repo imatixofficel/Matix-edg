@@ -255,10 +255,3 @@ MatiX-Worker/
 
 <div align="center">
 
-### 🕋 به نام خداوند جان و خرد
-
-**MatiX**
-
-ساخته‌شده با ❤️
-
-</div>
