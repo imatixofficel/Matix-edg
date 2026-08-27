@@ -1,63 +1,80 @@
-🕋 In the Name of Allah
+# به نام خداوند جان و خرد
 
-🚀 MatiX Worker
+<div align="center">
 
-MatiX Worker is a lightweight and customizable project built for Cloudflare Workers.
+# 🕊️ MatiX Worker
 
-It can be used for APIs, web services, bots, online tools, and other serverless projects.
+**یک پروژه سبک، سریع و قابل توسعه برای Cloudflare Workers**
 
----
+[🇮🇷 فارسی](README_FA.md) · [🇬🇧 English](README.md)
 
-✨ Features
-
-- ⚡ Fast and lightweight
-- ☁️ Runs on Cloudflare Workers
-- 🔐 Variables & Secrets support
-- 🗄️ Cloudflare KV support
-- 🔄 GitHub integration
-- 📱 Suitable for web and mobile projects
-- 🧩 Easy to customize
-- 🌐 Serverless architecture
+</div>
 
 ---
 
-📁 Project Structure
+## 📖 معرفی پروژه
 
+**MatiX Worker** یک پروژه متن‌باز و سبک برای اجرای سرویس‌های بدون‌سرور (Serverless) روی **Cloudflare Workers** است.
+
+این پروژه می‌تواند برای ساخت API، سرویس‌های وب، ربات‌ها، ابزارهای آنلاین و پروژه‌های وب و موبایل استفاده شود.
+
+هدف پروژه این است که راه‌اندازی و مدیریت یک Worker تا حد ممکن ساده، قابل فهم و قابل شخصی‌سازی باشد.
+
+---
+
+## ✨ امکانات
+
+- ⚡ سریع و سبک
+- ☁️ اجرا روی Cloudflare Workers
+- 🔐 پشتیبانی از Variables و Secrets
+- 🗄️ پشتیبانی از Cloudflare KV
+- 🔄 مناسب برای اتصال به GitHub
+- 📱 مناسب پروژه‌های وب و موبایل
+- 🧩 قابل توسعه و شخصی‌سازی
+- 🌐 معماری Serverless
+- 🇮🇷 مستندات فارسی
+
+---
+
+## 📁 ساختار پروژه
+
+```text
 MatiX-Worker/
-│
-├── _worker.js
+├── worker.js
 ├── README.md
 ├── README_FA.md
 ├── LICENSE
-└── .gitignore
+└── wrangler.toml
+```
 
-📄 Main File
+### 📄 فایل اصلی
 
-"_worker.js" is the main Cloudflare Worker file.
+فایل `worker.js` هسته اصلی Worker است و منطق اجرای پروژه در آن قرار می‌گیرد.
 
 ---
 
-🛠️ Creating the Worker File
+## 🛠️ آموزش راه‌اندازی
 
-First, create a project folder:
+### 1. ساخت پوشه پروژه
 
+```bash
 mkdir MatiX-Worker
 cd MatiX-Worker
+```
 
-Then create the main Worker file:
+فایل اصلی را ایجاد کنید:
 
-_worker.js
+```text
+worker.js
+```
 
-Put your Worker code inside "_worker.js".
+سپس کد Worker را داخل آن قرار دهید.
 
----
+### 2. ساخت Worker در Cloudflare
 
-☁️ Creating a Cloudflare Worker
+وارد داشبورد Cloudflare شوید و از مسیر زیر Worker خود را بسازید:
 
-Go to the Cloudflare Dashboard.
-
-Navigate to:
-
+```text
 Workers & Pages
         ↓
 Create
@@ -65,233 +82,139 @@ Create
 Workers
         ↓
 Create Worker
+```
 
-Choose a name for your Worker.
+یک نام برای پروژه انتخاب کنید؛ برای نمونه:
 
-Example:
-
+```text
 matix-worker
+```
 
-Then click Create and Deploy.
+سپس Worker را ایجاد و Deploy کنید.
 
----
+### 3. قرار دادن کد
 
-📤 Uploading "_worker.js"
+وارد Worker شوید و در بخش ویرایش کد، محتوای `worker.js` را قرار دهید.
 
-Open your Worker and select:
+پس از آن:
 
-Edit Code
-
-Then add your:
-
-_worker.js
-
-Worker code.
-
-After adding the code, click:
-
+```text
 Save and Deploy
+```
 
-After a successful deployment, Cloudflare will provide a Worker URL.
+را انتخاب کنید.
 
-Example:
-
-https://matix-worker.example.workers.dev
+بعد از Deploy موفق، Cloudflare یک آدرس برای Worker در اختیار شما قرار می‌دهد.
 
 ---
 
-🔐 Variables
+## 🔐 Variables و Secrets
 
-Variables are useful for configuration values that are not sensitive.
+برای تنظیمات غیرحساس می‌توانید از **Variables** استفاده کنید.
 
-Go to:
+مسیر معمول:
 
+```text
 Workers & Pages
         ↓
-Your Worker
+Worker
         ↓
 Settings
         ↓
 Variables and Secrets
+```
 
-Create a new Variable.
+برای اطلاعات حساس مانند موارد زیر از **Secrets** استفاده کنید:
 
-Example:
-
-Variable Name:
-API_URL
-
-Value:
-https://example.com/api
-
-You can then access the value from your Worker environment.
-
----
-
-🔒 Secrets
-
-Never put sensitive information directly inside "_worker.js" or a public GitHub repository.
-
-Examples of sensitive information:
-
-- API Keys
-- Bot Tokens
-- Secret Keys
-- Passwords
-- Private Tokens
-
-Go to:
-
-Settings
-        ↓
-Variables and Secrets
-        ↓
-Add
-        ↓
-Secret
-
-Add the secret there.
-
-⚠️ Important
-
-Do NOT write secrets directly inside your source code.
-
-❌ Bad:
-
-const TOKEN = "YOUR_SECRET_TOKEN";
-
-✅ Better:
-
-Cloudflare Secrets
-
----
-
-🗄️ Cloudflare KV
-
-Cloudflare KV can be used to store data that your Worker needs to access.
-
-To create a KV Namespace:
-
-Workers & Pages
-        ↓
-KV
-        ↓
-Create Namespace
-
-Example Namespace:
-
-MATIX_KV
-
----
-
-🔗 Connecting KV to the Worker
-
-After creating your KV Namespace:
-
-Your Worker
-        ↓
-Settings
-        ↓
-Bindings
-
-Add:
-
-KV Namespace Binding
-
-For example:
-
-Binding Name:
-KV
-
-Then select your KV Namespace.
-
----
-
-💻 Using KV in "_worker.js"
-
-Example:
-
-await env.KV.put("test", "Hello MatiX");
-
-const value = await env.KV.get("test");
-
-console.log(value);
-
-«Important: The Binding name in Cloudflare must match the name used in your code.»
-
-For example:
-
-Cloudflare Binding:
-KV
-
-must match:
-
-env.KV
-
----
-
-🔄 GitHub Integration
-
-Create a new repository on GitHub.
-
-Recommended structure:
-
-MatiX-Worker/
-│
-├── _worker.js
-├── README.md
-├── README_FA.md
-├── LICENSE
-└── .gitignore
-
-You can then connect the repository to Cloudflare Workers for deployment and version control.
-
----
-
-🔐 Security
-
-Never upload private credentials to a public GitHub repository.
-
-Keep these values inside Cloudflare Secrets:
-
+```text
 API_KEY
 BOT_TOKEN
 SECRET_KEY
 PASSWORD
 PRIVATE_TOKEN
+```
 
-Your source code should not contain real secret values.
+### ⚠️ نکته امنیتی
 
----
+اطلاعات محرمانه را مستقیماً داخل `worker.js` یا Repository عمومی GitHub قرار ندهید.
 
-📱 MatiX
+❌ نادرست:
 
-✈️ Telegram
+```js
+const TOKEN = "YOUR_SECRET_TOKEN";
+```
 
-"@Imatix7" (https://t.me/Imatix7)
+✅ درست:
 
-📸 Instagram
-
-@imatix_
-
----
-
-⭐ Support
-
-If you like this project:
-
-⭐ Star the repository
-
-🍴 Fork the repository
-
-📢 Share it with others
+مقدار حساس را به‌عنوان Secret در Cloudflare ذخیره کنید و از محیط Worker دریافت کنید.
 
 ---
 
-<div align="center">🕋 In the Name of Allah
+## 🗄️ استفاده از Cloudflare KV
 
-MatiX
+برای ذخیره داده‌های موردنیاز Worker می‌توانید از Cloudflare KV استفاده کنید.
 
-Made with ❤️
+از Cloudflare یک KV Namespace بسازید و سپس آن را از بخش Bindings به Worker متصل کنید.
+
+برای نمونه نام Binding را قرار دهید:
+
+```text
+KV
+```
+
+در کد:
+
+```js
+await env.KV.put("test", "Hello MatiX");
+
+const value = await env.KV.get("test");
+```
+
+**توجه:** نام Binding در Cloudflare باید دقیقاً با نام استفاده‌شده در کد یکسان باشد.
+
+---
+
+## 🔄 اتصال به GitHub
+
+Repository پروژه را در GitHub ایجاد کنید و فایل‌های پروژه را در آن قرار دهید.
+
+پس از اتصال Repository به Cloudflare می‌توانید از GitHub برای مدیریت نسخه‌ها و انتشار تغییرات استفاده کنید.
+
+---
+
+## 🧭 شروع سریع
+
+اگر فقط می‌خواهید پروژه را بررسی کنید:
+
+1. فایل `worker.js` را باز کنید.
+2. متغیرها و Secrets موردنیاز را در Cloudflare تنظیم کنید.
+3. در صورت نیاز KV را متصل کنید.
+4. Worker را Deploy کنید.
+5. آدرس ایجادشده توسط Cloudflare را آزمایش کنید.
+
+برای آموزش کامل‌تر، بخش‌های همین README را مرحله‌به‌مرحله دنبال کنید.
+
+---
+
+## 📜 مجوز
+
+این پروژه تحت مجوز موجود در فایل [`LICENSE`](LICENSE) منتشر شده است.
+
+---
+
+## 📱 ارتباط با MatiX
+
+- ✈️ Telegram: **@Imatix7**
+- 📸 Instagram: **@imatix_**
+
+---
+
+<div align="center">
+
+### 🕋 به نام خداوند جان و خرد
+
+**MatiX**
+
+ساخته‌شده با ❤️
 
 </div>

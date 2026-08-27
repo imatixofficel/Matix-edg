@@ -325,8 +325,9 @@ export default {
 						if (config_JSON.CF.Usage.success) {
 							const pagesSum = config_JSON.CF.Usage.pages;
 							const workersSum = config_JSON.CF.Usage.workers;
-							const total = Number.isFinite(config_JSON.CF.Usage.max) ? (config_JSON.CF.Usage.max / 1000) * 1024 : 1024 * 100;
-							responseHeaders["Subscription-Userinfo"] = `upload=${pagesSum}; download=${workersSum}; total=${total}; expire=4102329600`; // 2099-12-31 到期时间
+							const total = Math.max(0, Number(config_JSON.优选订阅生成.LIMIT_GB) || 100) * 1024 * 1024 * 1024;
+							const expireSeconds = Math.floor(Date.now() / 1000) + Math.max(1, Number(config_JSON.优选订阅生成.LIMIT_DAYS) || 30) * 86400;
+							responseHeaders["Subscription-Userinfo"] = `upload=${pagesSum}; download=${workersSum}; total=${total}; expire=${expireSeconds}`;
 						}
 						const isSubConverterRequest = url.searchParams.has('b64') || url.searchParams.has('base64') || request.headers.get('subconverter-request') || request.headers.get('subconverter-version') || ua.includes('subconverter') || ua.includes(('CF-Workers-SUB').toLowerCase()) || 作为优选订阅生成器;
 						const 订阅类型 = isSubConverterRequest
@@ -5618,8 +5619,10 @@ async function 读取config_JSON(env, hostname, userID, UA = "Mozilla/5.0", 重�
 				指定端口: -1,
 			},
 			SUB: null,
-			SUBNAME: "edge" + "tunnel",
+			SUBNAME: "MatiX",
 			SUBUpdateTime: 3, // 订阅更新时间（小时）
+			LIMIT_DAYS: 30, // مدت اعتبار اشتراک (روز)
+			LIMIT_GB: 100, // سقف حجم اعلامی اشتراک (گیگابایت)
 			TOKEN: await MD5MD5(hostname + userID),
 		},
 		订阅转换配置: {
@@ -5712,6 +5715,8 @@ async function 读取config_JSON(env, hostname, userID, UA = "Mozilla/5.0", 重�
 	config_JSON.UUID = userID;
 	if (!config_JSON.随机路径) config_JSON.随机路径 = false;
 	if (!config_JSON.启用0RTT) config_JSON.启用0RTT = false;
+	if (!Number.isFinite(Number(config_JSON.优选订阅生成.LIMIT_DAYS)) || Number(config_JSON.优选订阅生成.LIMIT_DAYS) < 1) config_JSON.优选订阅生成.LIMIT_DAYS = 30;
+	if (!Number.isFinite(Number(config_JSON.优选订阅生成.LIMIT_GB)) || Number(config_JSON.优选订阅生成.LIMIT_GB) < 0) config_JSON.优选订阅生成.LIMIT_GB = 100;
 
 	if (env.PATH) config_JSON.PATH = env.PATH.startsWith('/') ? env.PATH : '/' + env.PATH;
 	else if (!config_JSON.PATH) config_JSON.PATH = '/';
@@ -6630,7 +6635,7 @@ async function html1101(host, 访问IP) {
 }
 
 // ============================================================
-// Matrix Edge — theme functions (self-hosted, no external fetch)
+// MatiX — theme functions (self-hosted, no external fetch)
 // ============================================================
 
 function matrixEdgeSetupNotice(kind) {
@@ -6640,7 +6645,7 @@ function matrixEdgeSetupNotice(kind) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Matrix Edge — Setup Required</title>
+<title>MatiX — Setup Required</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&family=Inter:wght@400;600;800&display=swap');
   :root{ --purple:#8b5cf6; --purple-2:#a855f7; --pink:#c026d3; --bg-0:#05010c; --text:#e9e4ff; --muted:#9c93c9; }
@@ -6683,7 +6688,7 @@ function matrixEdgeSetupNotice(kind) {
   <div class="bg"><div class="orb orb1"></div><div class="orb orb2"></div></div>
   <button class="langtoggle" id="langBtn">EN</button>
   <div class="wrap"><div class="card">
-    <div class="brand"><div class="logo"></div><div class="title">Matrix Edge</div></div>
+    <div class="brand"><div class="logo"></div><div class="title">MatiX</div></div>
     ${isAdmin ? `
     <h1><span data-fa>تنظیمات ناقص است</span><span data-en>Setup incomplete</span></h1>
     <p><span data-fa>متغیر محیطی <code>ADMIN</code> تنظیم نشده. برو به Settings → Variables and Secrets و یک رمز عبور برای <code>ADMIN</code> تعریف کن، سپس دوباره Deploy کن.</span>
@@ -6709,7 +6714,7 @@ function matrixEdgeSetupNotice(kind) {
 }
 
 // ============================================================
-// Matrix Edge — Login Page (self-hosted, no external fetch)
+// MatiX — Login Page (self-hosted, no external fetch)
 // Bilingual (FA default / EN), purple-black glow theme, animated background
 // Drop this function anywhere in your _worker.js (outside the fetch handler)
 // ============================================================
@@ -6720,7 +6725,7 @@ function matrixEdgeLoginPage() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
-<title>Matrix Edge</title>
+<title>MatiX</title>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🟣</text></svg>">
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&family=Inter:wght@400;600;800&display=swap');
@@ -6822,7 +6827,7 @@ function matrixEdgeLoginPage() {
 
   <div class="wrap">
     <div class="card">
-      <div class="brand"><div class="logo"></div><div class="title">Matrix Edge</div></div>
+      <div class="brand"><div class="logo"></div><div class="title">MatiX</div></div>
       <div class="subtitle">
         <span data-fa>ورود به پنل مدیریت</span>
         <span data-en>Sign in to your dashboard</span>
@@ -6841,7 +6846,7 @@ function matrixEdgeLoginPage() {
         </div>
       </form>
 
-      <div class="foot">MATRIX EDGE · SECURE ACCESS</div>
+      <div class="foot">MATIX · SECURE ACCESS</div>
     </div>
   </div>
 
@@ -6908,7 +6913,7 @@ function matrixEdgeLoginPage() {
 // ------------------------------------------------------------
 
 // ============================================================
-// Matrix Edge — Native Admin Dashboard
+// MatiX — Native Admin Dashboard
 // Talks directly to this worker's own API (/admin/config.json,
 // /admin/ADD.txt, /admin/log.json, /admin/init) — same-origin,
 // no iframe, so the theme + Persian/English labels apply fully.
@@ -6920,7 +6925,7 @@ function matrixEdgeAdminDashboard() {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Matrix Edge — Dashboard</title>
+<title>MatiX — Dashboard</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;800&family=Inter:wght@400;500;600;800&display=swap');
   :root{ --purple:#8b5cf6; --purple-2:#a855f7; --pink:#c026d3; --bg-0:#05010c; --card:#0f0920; --text:#e9e4ff; --muted:#9c93c9; --green:#34d399; --red:#f87171; }
@@ -7009,7 +7014,7 @@ function matrixEdgeAdminDashboard() {
   <div class="bg"><div class="orb orb1"></div><div class="orb orb2"></div></div>
 
   <header>
-    <div class="brand"><div class="logo"></div><div class="brand-name">Matrix Edge</div></div>
+    <div class="brand"><div class="logo"></div><div class="brand-name">MatiX</div></div>
     <div class="actions">
       <button class="chip" id="langBtn">EN</button>
       <button class="chip danger" id="resetBtn"><span data-fa>ریست تنظیمات</span><span data-en>Reset config</span></button>
@@ -7083,6 +7088,21 @@ function matrixEdgeAdminDashboard() {
       <label class="chk"><input type="checkbox" id="f_skipcert"><span data-fa>رد شدن از بررسی گواهی TLS</span><span data-en>Skip TLS certificate verification</span></label>
       <label class="chk"><input type="checkbox" id="f_randpath"><span data-fa>مسیر تصادفی</span><span data-en>Random path</span></label>
       <label class="chk"><input type="checkbox" id="f_0rtt"><span data-fa>فعال‌سازی 0-RTT</span><span data-en>Enable 0-RTT</span></label>
+    </div>
+
+    <div class="card">
+      <h2><span class="dot"></span><span data-fa>محدودیت اشتراک</span><span data-en>Subscription limits</span></h2>
+      <p class="muted"><span data-fa>مدت اعتبار و سقف حجم اشتراک از این بخش تنظیم می‌شود. مقدار حجم در اطلاعات استاندارد اشتراک نیز درج خواهد شد.</span><span data-en>Set the subscription validity period and advertised traffic limit here.</span></p>
+      <div class="grid2">
+        <div class="field">
+          <label><span data-fa>اعتبار (روز)</span><span data-en>Validity (days)</span></label>
+          <input type="number" id="f_limit_days" min="1" max="3650" step="1" value="30">
+        </div>
+        <div class="field">
+          <label><span data-fa>حجم (گیگابایت)</span><span data-en>Traffic (GB)</span></label>
+          <input type="number" id="f_limit_gb" min="0" max="100000" step="1" value="100">
+        </div>
+      </div>
     </div>
 
     <div class="card">
@@ -7167,6 +7187,8 @@ function matrixEdgeAdminDashboard() {
       document.getElementById('f_skipcert').checked = !!c.跳过证书验证;
       document.getElementById('f_randpath').checked = !!c.随机路径;
       document.getElementById('f_0rtt').checked = !!c.启用0RTT;
+      document.getElementById('f_limit_days').value = c.优选订阅生成?.LIMIT_DAYS ?? 30;
+      document.getElementById('f_limit_gb').value = c.优选订阅生成?.LIMIT_GB ?? 100;
       const proxyKey = Object.keys(c.反代 || {}).find(k => k.toUpperCase() === 'PROXYIP');
       document.getElementById('f_proxyip').value = (proxyKey ? c.反代[proxyKey] : 'auto') || 'auto';
       document.getElementById('f_socks_type').value = (c.反代?.SOCKS5?.启用 || '').toLowerCase();
@@ -7225,7 +7247,9 @@ function matrixEdgeAdminDashboard() {
     try{
       const c = currentConfig;
       c.优选订阅生成 = c.优选订阅生成 || {};
-      c.优选订阅生成.SUBNAME = document.getElementById('f_subname').value || 'edgetunnel';
+      c.优选订阅生成.SUBNAME = document.getElementById('f_subname').value || 'MatiX';
+      c.优选订阅生成.LIMIT_DAYS = Math.max(1, Number(document.getElementById('f_limit_days').value) || 30);
+      c.优选订阅生成.LIMIT_GB = Math.max(0, Number(document.getElementById('f_limit_gb').value) || 100);
       c.PATH = document.getElementById('f_path').value || '/';
       c.协议类型 = document.getElementById('f_protocol').value;
       c.传输协议 = document.getElementById('f_transport').value;
