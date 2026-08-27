@@ -1,0 +1,20 @@
+{
+  "version": "5.0.0",
+  "project": {
+    "name": "MatiX",
+    "github": "https://github.com/imatixofficel/Matix-edg",
+    "telegram": "https://t.me/Imatix7"
+  },
+  "subscription": {
+    "days": 30,
+    "volume_gb": 100
+  },
+  "clean_ip_source": "https://raw.githubusercontent.com/vfarid/cf-clean-ips/main/list.json",
+  "cloudflare": {
+    "api_token": "SET_IN_CLOUDFLARE_SECRET",
+    "account_id": "SET_IN_CLOUDFLARE_VARIABLE"
+  },
+  "bindings": {
+    "KV": "YOUR_KV_NAMESPACE"
+  }
+}

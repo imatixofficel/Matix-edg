@@ -5623,6 +5623,7 @@ async function 读取config_JSON(env, hostname, userID, UA = "Mozilla/5.0", 重�
 			SUBUpdateTime: 3, // 订阅更新时间（小时）
 			LIMIT_DAYS: 30, // مدت اعتبار اشتراک (روز)
 			LIMIT_GB: 100, // سقف حجم اعلامی اشتراک (گیگابایت)
+			CLEAN_IP_SOURCE: "https://raw.githubusercontent.com/vfarid/cf-clean-ips/main/list.json",
 			TOKEN: await MD5MD5(hostname + userID),
 		},
 		订阅转换配置: {
@@ -5717,6 +5718,7 @@ async function 读取config_JSON(env, hostname, userID, UA = "Mozilla/5.0", 重�
 	if (!config_JSON.启用0RTT) config_JSON.启用0RTT = false;
 	if (!Number.isFinite(Number(config_JSON.优选订阅生成.LIMIT_DAYS)) || Number(config_JSON.优选订阅生成.LIMIT_DAYS) < 1) config_JSON.优选订阅生成.LIMIT_DAYS = 30;
 	if (!Number.isFinite(Number(config_JSON.优选订阅生成.LIMIT_GB)) || Number(config_JSON.优选订阅生成.LIMIT_GB) < 0) config_JSON.优选订阅生成.LIMIT_GB = 100;
+	if (typeof config_JSON.优选订阅生成.CLEAN_IP_SOURCE !== 'string') config_JSON.优选订阅生成.CLEAN_IP_SOURCE = "https://raw.githubusercontent.com/vfarid/cf-clean-ips/main/list.json";
 
 	if (env.PATH) config_JSON.PATH = env.PATH.startsWith('/') ? env.PATH : '/' + env.PATH;
 	else if (!config_JSON.PATH) config_JSON.PATH = '/';
@@ -5879,7 +5881,30 @@ async function 生成随机IP(request, count = 16, 指定端口 = -1) {
 	const cfname = 运营商名称映射[运营商文件标识] || 'CF官方优选';
 	const cfport = [443, 2053, 2083, 2087, 2096, 8443];
 	let cidrList = [];
-	try { const res = await fetch(cidr_url); cidrList = res.ok ? await 整理成数组(await res.text()) : ['104.16.0.0/13'] } catch { cidrList = ['104.16.0.0/13'] }
+	const remoteIPSource = String(config_JSON?.优选订阅生成?.CLEAN_IP_SOURCE || '').trim();
+	if (remoteIPSource) {
+		try {
+			const sourceRes = await fetch(remoteIPSource, { headers: { 'Accept': 'application/json,text/plain,*/*' } });
+			if (sourceRes.ok) {
+				const text = await sourceRes.text();
+				let values = [];
+				try {
+					const json = JSON.parse(text);
+						const walk = (v) => {
+							if (typeof v === 'string') {
+								if (/^(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?(?:#.*)?$/.test(v.trim())) values.push(v.trim());
+							} else if (Array.isArray(v)) v.forEach(walk);
+							else if (v && typeof v === 'object') Object.values(v).forEach(walk);
+						};
+						walk(json);
+				} catch { values = text.split(/\r?\n|,/).map(x => x.trim()).filter(Boolean); }
+				cidrList = [...new Set(values.filter(v => /^(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?(?:#.*)?$/.test(v)).map(v => v.split('#')[0].split(':')[0]))];
+			}
+		} catch (e) { console.warn('[IP Source] source unavailable:', e?.message || e); }
+	}
+	if (!cidrList.length) {
+		try { const res = await fetch(cidr_url); cidrList = res.ok ? await 整理成数组(await res.text()) : ['104.16.0.0/13'] } catch { cidrList = ['104.16.0.0/13'] }
+	}
 
 	const generateRandomIPFromCIDR = (cidr) => {
 		const [baseIP, prefixLength] = cidr.split('/'), prefix = parseInt(prefixLength), hostBits = 32 - prefix;
@@ -5922,7 +5947,7 @@ async function 获取优选订阅生成器数据(优选订阅生成器HOST) {
 
 	try {
 		const response = await fetch(优选订阅生成器URL, {
-			headers: { 'User-Agent': 'v2rayN/edge' + 'tunnel (https://github.com/' + 特征码字典[1] + '/edge' + 'tunnel)' }
+			headers: { 'User-Agent': 'MatiX/1.0 (https://github.com/imatixofficel/Matix-edg)' }
 		});
 
 		if (!response.ok) {
@@ -6685,7 +6710,7 @@ function matrixEdgeSetupNotice(kind) {
 </style>
 </head>
 <body>
-  <div class="bg"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+  <div class="bg"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
   <button class="langtoggle" id="langBtn">EN</button>
   <div class="wrap"><div class="card">
     <div class="brand"><div class="logo"></div><div class="title">MatiX</div></div>
@@ -6937,6 +6962,8 @@ function matrixEdgeAdminDashboard() {
                radial-gradient(circle at 90% 95%, #2a0a3a 0%, transparent 40%), var(--bg-0);}
   .orb{position:absolute; border-radius:50%; filter:blur(100px); opacity:.3;}
   .orb1{width:32vw;height:32vw;background:var(--purple);top:-12%;left:-8%;animation:f1 20s ease-in-out infinite;}
+  .orb3{width:24vw;height:24vw;background:#22d3ee;top:42%;left:55%;animation:f3 18s ease-in-out infinite;}
+  @keyframes f3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-5vw,4vh) scale(.85)}}
   .orb2{width:28vw;height:28vw;background:var(--pink);bottom:-12%;right:-6%;animation:f2 24s ease-in-out infinite;}
   @keyframes f1{0%,100%{transform:translate(0,0)}50%{transform:translate(4vw,5vh)}}
   @keyframes f2{0%,100%{transform:translate(0,0)}50%{transform:translate(-4vw,-4vh)}}
@@ -6958,14 +6985,33 @@ function matrixEdgeAdminDashboard() {
   button.chip.danger{border-color:rgba(248,113,113,.45); color:#fda4a4;}
 
   main{position:relative; z-index:2; max-width:840px; margin:0 auto; padding:20px 16px 60px;}
-  .card{background:linear-gradient(180deg, rgba(20,10,40,.6), rgba(10,4,22,.75));
-    border:1px solid rgba(168,85,247,.28); border-radius:16px; padding:20px; margin-bottom:18px;
+  .card{background:linear-gradient(180deg, rgba(20,10,40,.62), rgba(10,4,22,.78));
+    border:1px solid rgba(168,85,247,.28); border-radius:22px; padding:20px; margin-bottom:18px;
     box-shadow:0 0 0 1px rgba(168,85,247,.05), 0 16px 40px -14px rgba(88,28,135,.5);}
   .card h2{font-size:14px; margin:0 0 14px; display:flex; align-items:center; gap:8px; color:#fff;}
   .card h2 .dot{width:7px;height:7px;border-radius:50%;background:var(--purple-2); box-shadow:0 0 8px var(--purple-2);}
 
   .row{display:flex; gap:10px; align-items:center;}
   .field{margin-bottom:13px;}
+  .icon{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:10px;background:rgba(168,85,247,.12);border:1px solid rgba(168,85,247,.25);animation:bob 3s ease-in-out infinite;}
+  @keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-3px) rotate(4deg)}}
+  .hamb{display:none;background:rgba(255,255,255,.06);border:1px solid rgba(168,85,247,.35);color:#fff;border-radius:12px;padding:8px 10px;font-size:18px;cursor:pointer;}
+  .side{position:fixed;inset:0 auto 0 0;width:280px;z-index:20;background:rgba(10,4,22,.96);backdrop-filter:blur(18px);border-right:1px solid rgba(168,85,247,.28);transform:translateX(-105%);transition:.25s;padding:80px 16px 20px;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .side.open{transform:translateX(0);}
+  .side a{display:flex;gap:10px;align-items:center;padding:12px 14px;margin:6px 0;border-radius:14px;color:var(--text);text-decoration:none;background:rgba(255,255,255,.035);border:1px solid transparent;}
+  .side a:hover{border-color:rgba(168,85,247,.3);background:rgba(168,85,247,.08);}
+  .backdrop{position:fixed;inset:0;z-index:19;background:rgba(0,0,0,.45);display:none;}
+  .backdrop.show{display:block;}
+  .usage-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;}
+  .usage-stat{padding:16px;border-radius:18px;background:rgba(255,255,255,.035);border:1px solid rgba(168,85,247,.2);}
+  .usage-bar{height:12px;border-radius:999px;background:rgba(255,255,255,.07);overflow:hidden;margin-top:10px;}
+  .usage-fill{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--pink));border-radius:inherit;transition:width .5s;}
+  .modal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(3,1,8,.72);backdrop-filter:blur(8px);padding:20px;}
+  .modal.hidden{display:none;}
+  .modal-card{max-width:430px;width:100%;padding:28px;border-radius:24px;background:linear-gradient(180deg,rgba(28,12,54,.96),rgba(10,4,22,.98));border:1px solid rgba(168,85,247,.38);box-shadow:0 30px 90px rgba(0,0,0,.55);text-align:center;}
+  .tg-icon{font-size:44px;display:block;animation:floatIcon 3s ease-in-out infinite;}
+  @keyframes floatIcon{50%{transform:translateY(-6px) rotate(3deg)}}
+  @media(max-width:700px){.hamb{display:inline-flex}.actions .danger{display:none}.usage-grid{grid-template-columns:1fr}.side{left:auto;right:0;transform:translateX(105%);border-right:0;border-left:1px solid rgba(168,85,247,.28)}.side.open{transform:translateX(0)}}
   label{display:block; font-size:12.5px; color:var(--muted); margin-bottom:6px;}
   input[type=text], input[type=password], select, textarea{
     width:100%; padding:10px 12px; border-radius:10px; font-size:13.5px;
@@ -7011,21 +7057,30 @@ function matrixEdgeAdminDashboard() {
 </style>
 </head>
 <body>
-  <div class="bg"><div class="orb orb1"></div><div class="orb orb2"></div></div>
+  <div class="bg"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
 
   <header>
-    <div class="brand"><div class="logo"></div><div class="brand-name">MatiX</div></div>
+    <div class="brand"><button class="hamb" id="hamb">☰</button><div class="logo"></div><div class="brand-name">MatiX</div></div>
     <div class="actions">
       <button class="chip" id="langBtn">EN</button>
       <button class="chip danger" id="resetBtn"><span data-fa>ریست تنظیمات</span><span data-en>Reset config</span></button>
       <button class="chip" id="logoutBtn"><span data-fa>خروج</span><span data-en>Logout</span></button>
     </div>
   </header>
+  <aside class="side" id="side">
+    <a href="#overview"><span class="icon">🏠</span><span data-fa>نمای کلی</span><span data-en>Overview</span></a>
+    <a href="#usage"><span class="icon">📊</span><span data-fa>نمودار مصرف</span><span data-en>Usage chart</span></a>
+    <a href="#subscription"><span class="icon">⏳</span><span data-fa>روز و حجم</span><span data-en>Days & volume</span></a>
+    <a href="#ip-source"><span class="icon">🌐</span><span data-fa>منبع IP</span><span data-en>IP source</span></a>
+    <a href="https://github.com/imatixofficel/Matix-edg" target="_blank"><span class="icon">💻</span>GitHub</a>
+    <a href="https://t.me/Imatix7" target="_blank"><span class="icon">✈️</span><span data-fa>کانال تلگرام</span><span data-en>Telegram channel</span></a>
+  </aside>
+  <div class="backdrop" id="backdrop"></div>
 
   <main>
 
-    <div class="card">
-      <h2><span class="dot"></span><span data-fa>لینک اتصال</span><span data-en>Connection links</span></h2>
+    <div class="card" id="overview">
+      <h2><span class="dot"></span><span class="icon">🔗</span><span data-fa>لینک اتصال</span><span data-en>Connection links</span></h2>
       <div class="field">
         <label><span data-fa>لینک ساب‌اسکریپشن (این رو در برنامه‌ی کلاینت وارد کن)</span><span data-en>Subscription URL (add this in your client app)</span></label>
         <div class="linkbox"><input type="text" id="subLink" readonly><button class="copy" data-copy="subLink"><span data-fa>کپی</span><span data-en>Copy</span></button></div>
@@ -7090,8 +7145,8 @@ function matrixEdgeAdminDashboard() {
       <label class="chk"><input type="checkbox" id="f_0rtt"><span data-fa>فعال‌سازی 0-RTT</span><span data-en>Enable 0-RTT</span></label>
     </div>
 
-    <div class="card">
-      <h2><span class="dot"></span><span data-fa>محدودیت اشتراک</span><span data-en>Subscription limits</span></h2>
+    <div class="card" id="subscription">
+      <h2><span class="dot"></span><span class="icon">⏳</span><span data-fa>محدودیت اشتراک</span><span data-en>Subscription limits</span></h2>
       <p class="muted"><span data-fa>مدت اعتبار و سقف حجم اشتراک از این بخش تنظیم می‌شود. مقدار حجم در اطلاعات استاندارد اشتراک نیز درج خواهد شد.</span><span data-en>Set the subscription validity period and advertised traffic limit here.</span></p>
       <div class="grid2">
         <div class="field">
@@ -7135,9 +7190,40 @@ function matrixEdgeAdminDashboard() {
       <textarea id="f_addlist" placeholder="1.2.3.4:443#NL&#10;5.6.7.8:2053#DE"></textarea>
     </div>
 
+    <div class="card" id="usage">
+      <h2><span class="dot"></span><span class="icon">📊</span><span data-fa>نمودار مصرف</span><span data-en>Usage chart</span></h2>
+      <div class="usage-grid">
+        <div class="usage-stat">
+          <div class="muted"><span data-fa>مصرف ثبت‌شده Worker</span><span data-en>Recorded Worker usage</span></div>
+          <div style="font-size:24px;font-weight:800;margin-top:5px" id="usageTotal">۰ MB</div>
+          <div class="usage-bar"><div class="usage-fill" id="usageFill"></div></div>
+          <div class="muted" id="usageMeta">—</div>
+        </div>
+        <div class="usage-stat">
+          <div class="muted"><span data-fa>سقف اشتراک</span><span data-en>Subscription limit</span></div>
+          <div style="font-size:24px;font-weight:800;margin-top:5px" id="quotaTotal">—</div>
+          <div class="muted" id="expireMeta">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="ip-source">
+      <h2><span class="dot"></span><span class="icon">🌐</span><span data-fa>منبع IPهای منتخب</span><span data-en>Preferred IP source</span></h2>
+      <p class="muted"><span data-fa>این منبع رایگان GitHub برای تهیه فهرست IP استفاده می‌شود. اگر خالی باشد، منبع داخلی پروژه استفاده خواهد شد.</span><span data-en>A free GitHub source can provide the preferred IP list. Leave empty to use the project's built-in source.</span></p>
+      <div class="field">
+        <label><span data-fa>آدرس منبع</span><span data-en>Source URL</span></label>
+        <input type="text" id="f_ip_source" placeholder="https://raw.githubusercontent.com/.../list.json">
+      </div>
+    </div>
+
     <div class="card">
       <h2><span class="dot"></span><span data-fa>لاگ‌های اخیر</span><span data-en>Recent logs</span></h2>
       <div class="loglist skel" id="logBox">…</div>
+    </div>
+
+    <div class="muted" style="text-align:center;margin:8px 0 18px">
+      <a href="https://t.me/Imatix7" target="_blank" style="color:#c4b5fd;text-decoration:none">✈️ @Imatix7</a> · 
+      <a href="https://github.com/imatixofficel/Matix-edg" target="_blank" style="color:#c4b5fd;text-decoration:none">GitHub / imatixofficel/Matix-edg</a>
     </div>
 
     <div class="save-bar">
@@ -7147,6 +7233,15 @@ function matrixEdgeAdminDashboard() {
 
   </main>
 
+  <div class="modal" id="welcomeModal">
+    <div class="modal-card">
+      <span class="tg-icon">✈️</span>
+      <h2 style="margin:10px 0 8px"><span data-fa>به کانال رسمی MatiX خوش آمدید</span><span data-en>Welcome to the official MatiX channel</span></h2>
+      <p class="muted"><span data-fa>برای دریافت خبرهای پروژه و بروزرسانی‌ها می‌توانید عضو کانال شوید.</span><span data-en>Join the channel for project news and updates.</span></p>
+      <button class="primary" style="width:100%;margin-top:14px" id="joinTelegram"><span data-fa>عضویت در تلگرام</span><span data-en>Join on Telegram</span></button>
+      <button class="ghost" style="width:100%;margin-top:9px" id="closeWelcome"><span data-fa>بعداً</span><span data-en>Later</span></button>
+    </div>
+  </div>
   <div class="toast" id="toast"></div>
 
 <script>
@@ -7167,8 +7262,31 @@ function matrixEdgeAdminDashboard() {
     setTimeout(()=> toastEl.classList.remove('show'), 2600);
   }
   const faOn = () => root.getAttribute('data-lang') === 'fa';
+  const side = document.getElementById('side'), backdrop = document.getElementById('backdrop');
+  document.getElementById('hamb').onclick = () => { side.classList.add('open'); backdrop.classList.add('show'); };
+  backdrop.onclick = () => { side.classList.remove('open'); backdrop.classList.remove('show'); };
+  side.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { side.classList.remove('open'); backdrop.classList.remove('show'); }));
+  const welcome = document.getElementById('welcomeModal');
+  if (!localStorage.getItem('matix_tg_welcome')) welcome.classList.remove('hidden'); else welcome.classList.add('hidden');
+  document.getElementById('joinTelegram').onclick = () => { localStorage.setItem('matix_tg_welcome','1'); window.open('https://t.me/Imatix7','_blank','noopener'); welcome.classList.add('hidden'); };
+  document.getElementById('closeWelcome').onclick = () => { localStorage.setItem('matix_tg_welcome','1'); welcome.classList.add('hidden'); };
 
   let currentConfig = null;
+
+  function updateUsage(c){
+    const u = c.CF?.Usage || {};
+    const usedBytes = Math.max(0, Number(u.pages)||0) + Math.max(0, Number(u.workers)||0);
+    const usedMB = usedBytes / (1024*1024);
+    const usedGB = usedBytes / (1024*1024*1024);
+    const limitGB = Math.max(0, Number(c.优选订阅生成?.LIMIT_GB)||0);
+    const pct = limitGB > 0 ? Math.min(100, usedGB / limitGB * 100) : 0;
+    document.getElementById('usageTotal').textContent = usedGB >= 1 ? usedGB.toFixed(2)+' GB' : usedMB.toFixed(1)+' MB';
+    document.getElementById('usageFill').style.width = pct.toFixed(1)+'%';
+    document.getElementById('usageMeta').textContent = (faOn() ? 'درصد از سقف: ' : 'Percent of quota: ') + pct.toFixed(1) + '%';
+    document.getElementById('quotaTotal').textContent = limitGB + ' GB';
+    const days = Number(c.优选订阅生成?.LIMIT_DAYS)||0;
+    document.getElementById('expireMeta').textContent = (faOn() ? 'اعتبار: ' : 'Validity: ') + days + (faOn() ? ' روز' : ' days');
+  }
 
   async function loadConfig(){
     try{
@@ -7189,6 +7307,8 @@ function matrixEdgeAdminDashboard() {
       document.getElementById('f_0rtt').checked = !!c.启用0RTT;
       document.getElementById('f_limit_days').value = c.优选订阅生成?.LIMIT_DAYS ?? 30;
       document.getElementById('f_limit_gb').value = c.优选订阅生成?.LIMIT_GB ?? 100;
+      document.getElementById('f_ip_source').value = c.优选订阅生成?.CLEAN_IP_SOURCE || 'https://raw.githubusercontent.com/vfarid/cf-clean-ips/main/list.json';
+      updateUsage(c);
       const proxyKey = Object.keys(c.反代 || {}).find(k => k.toUpperCase() === 'PROXYIP');
       document.getElementById('f_proxyip').value = (proxyKey ? c.反代[proxyKey] : 'auto') || 'auto';
       document.getElementById('f_socks_type').value = (c.反代?.SOCKS5?.启用 || '').toLowerCase();
@@ -7250,6 +7370,7 @@ function matrixEdgeAdminDashboard() {
       c.优选订阅生成.SUBNAME = document.getElementById('f_subname').value || 'MatiX';
       c.优选订阅生成.LIMIT_DAYS = Math.max(1, Number(document.getElementById('f_limit_days').value) || 30);
       c.优选订阅生成.LIMIT_GB = Math.max(0, Number(document.getElementById('f_limit_gb').value) || 100);
+      c.优选订阅生成.CLEAN_IP_SOURCE = document.getElementById('f_ip_source').value.trim();
       c.PATH = document.getElementById('f_path').value || '/';
       c.协议类型 = document.getElementById('f_protocol').value;
       c.传输协议 = document.getElementById('f_transport').value;
