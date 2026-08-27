@@ -261,11 +261,3 @@ Cloudflare Secrets
 اگر پروژه برای شما مفید بود، Repository را ⭐ Star کنید.
 
 ---
-
-<div align="center">🕋 به نام خدا
-
-MatiX
-
-Made with ❤️
-
-</div>
