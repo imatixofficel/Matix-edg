@@ -1,257 +1,134 @@
-# به نام خداوند جان و خرد
+markdown
+# Matix Edge — پنل مدیریت Cloudflare Workers
 
-<div dir="rtl" align="right">
+**به نام خداوند جان و خرد**
 
-# 🕊️ MatiX Worker
+یک پنل سبک، سریع و ساده که کاملاً روی Cloudflare Workers اجرا می‌شه.
 
-**یک پروژه ایرانی‌پسند، سبک، سریع و قابل توسعه برای Cloudflare Workers**
-
-</div>
-
-<div align="center">
-
-[🇮🇷 فارسی](README_FA.md) · [🇬🇧 English](README.md)
-
-</div>
+🌐 **راه‌اندازی خودکار:** [https://matix-wizard.imatixofficel.workers.dev/](https://matix-wizard.imatixofficel.workers.dev/)
 
 ---
 
-## 📖 درباره پروژه
+## این چیه؟
 
-**MatiX Worker** پروژه‌ای سبک و قابل توسعه برای اجرای سرویس‌های بدون‌سرور روی **Cloudflare Workers** است.
+Matix Edge یه پنل رایگان و ساده‌ست که تمام کارهاش روی Cloudflare Workers انجام می‌شه.
 
-این پروژه می‌تواند برای ساخت API، سرویس‌های وب، ربات‌ها، ابزارهای آنلاین و پروژه‌های وب و موبایل مورد استفاده قرار گیرد.
+باهاش می‌تونی کانفیگ‌های VLESS، Trojan یا Shadowsocks خودت رو مدیریت کنی، لینک سابسکریپشن بگیری، مصرف رو ببینی و همه چیز رو از یه داشبورد تمیز کنترل کنی.
 
-هدف MatiX این است که راه‌اندازی، تنظیم و توسعه Worker برای کاربران تا جای ممکن ساده و قابل فهم باشد.
-
----
-
-## ✨ امکانات
-
-- ⚡ اجرای سریع و سبک
-- ☁️ اجرا روی Cloudflare Workers
-- 🔐 پشتیبانی از Variables و Secrets
-- 🗄️ پشتیبانی از Cloudflare KV
-- 🔄 امکان اتصال به GitHub
-- 📱 مناسب پروژه‌های وب و موبایل
-- 🧩 قابلیت توسعه و شخصی‌سازی
-- 🌐 معماری بدون‌سرور
-- 🇮🇷 مستندات و آموزش فارسی
+بدون سرور، بدون VPS، بدون هزینه. فقط یه بار راه‌اندازی کن و استفاده کن.
 
 ---
 
-## 📁 ساختار پروژه
+## چرا ازش استفاده کنی؟
 
-```text
-MatiX-Worker/
-├── worker.js
-├── README.md
-├── README_FA.md
-├── LICENSE
-└── wrangler.toml
-```
-
-### 📄 فایل اصلی
-
-فایل `worker.js` هسته اصلی پروژه است و کد Worker در آن قرار دارد.
+- ⚡ **سریع** — روی شبکه جهانی Cloudflare اجرا می‌شه
+- 🆓 **رایگان** — بدون سرور، بدون هزینه، بدون نگهداری
+- 🧙 **راه‌اندازی آسان** — فقط با یه کلیک از طریق Matix Wizard
+- 🎨 **داشبورد تمیز** — دو زبانه (فارسی و انگلیسی)، تم تاریک و روشن
+- 📡 **سابسکریپشن هوشمند** — IPهای تمیز رو خودکار از Matix Scanner می‌گیره
+- 🤖 **ربات تلگرام** — از تلگرام کانفیگ بگیر، وضعیت ببین، تنظیمات رو ریست کن
+- 🔄 **به‌روزرسانی خودکار** — با یه کلیک از GitHub آپدیت کن
+- 📊 **نمایش مصرف** — ببین چقدر Worker مصرف کرده و سقفت چقدره
 
 ---
 
-## 🛠️ آموزش نصب و راه‌اندازی
+## چطور راه‌اندازی کنم؟
 
-### ۱. ساخت پوشه پروژه
+ساده‌ترین راه استفاده از Matix Wizard هست:
 
-در ترمینال یک پوشه برای پروژه بسازید:
+1. برو به 👉 https://matix-wizard.imatixofficel.workers.dev/
+2. توکن Cloudflare خودت رو وارد کن
+3. روی **شروع** کلیک کن
 
-```bash
-mkdir MatiX-Worker
-cd MatiX-Worker
-```
+Wizard به‌طور خودکار:
 
-سپس فایل اصلی را ایجاد کنید:
+1. یه KV Namespace می‌سازه
+2. Worker رو می‌سازه
+3. متغیرها و Secrets رو تنظیم می‌کنه (ADMIN و UUID)
+4. KV رو به Worker وصل می‌کنه
+5. همه چیز رو Deploy می‌کنه
 
-```text
-worker.js
-```
+وقتی تموم شد، Wizard آدرس پنل تو رو نشون می‌ده:
 
-کد Worker را داخل این فایل قرار دهید.
 
-### ۲. ساخت Worker در Cloudflare
 
-وارد داشبورد Cloudflare شوید و از مسیر زیر یک Worker جدید بسازید:
+https://matix-worker.YOURNAME.workers.dev
 
-```text
-Workers & Pages
-        ↓
-Create
-        ↓
-Workers
-        ↓
-Create Worker
-```
 
-یک نام برای Worker انتخاب کنید؛ برای نمونه:
 
-```text
-matix-worker
-```
+وارد پنل شو:
 
-سپس Worker را ایجاد و Deploy کنید.
 
-### ۳. قرار دادن کد Worker
 
-پس از ساخت Worker، وارد صفحه آن شوید و در بخش ویرایش کد، محتوای `worker.js` را قرار دهید.
+https://matix-worker.YOURNAME.workers.dev/login
 
-سپس گزینه:
 
-```text
-Save and Deploy
-```
 
-را انتخاب کنید.
-
-پس از Deploy موفق، Cloudflare آدرس Worker را در اختیار شما قرار می‌دهد.
+رمز عبور همون مقداریه که به‌عنوان `ADMIN` تنظیم کردی.
 
 ---
 
-## 🔐 تنظیم Variables
+## چی بهت می‌ده؟
 
-برای مقادیر معمولی و غیرمحرمانه می‌توانید از Variables استفاده کنید.
+یه داشبورد کامل مدیریت با این امکانات:
 
-مسیر معمول:
-
-```text
-Workers & Pages
-        ↓
-Worker
-        ↓
-Settings
-        ↓
-Variables and Secrets
-```
-
-برای نمونه:
-
-```text
-Variable Name:
-API_URL
-```
-
-مقدار:
-
-```text
-https://example.com/api
-```
+- 🔗 لینک سابسکریپشن
+- 🔗 لینک تک‌نود
+- ⚙️ تنظیمات پروتکل و انتقال
+- 📊 نمودار مصرف
+- ⏳ محدودیت اشتراک (روز و گیگابایت)
+- 🌐 منبع IPهای منتخب
+- 🛡️ تنظیمات پروکسی (SOCKS5 / HTTP / HTTPS)
+- 📋 لیست IP دلخواه
+- 🤖 فعال‌سازی ربات تلگرام
+- 🚀 به‌روزرسانی خودکار از GitHub
+- 🧾 لاگ‌های اخیر
 
 ---
 
-## 🔒 تنظیم Secrets
+## پشت صحنه چطور کار می‌کنه؟
 
-اطلاعات حساس را هرگز داخل `worker.js` یا Repository عمومی GitHub قرار ندهید.
+Matix Edge کاملاً روی Cloudflare Workers اجرا می‌شه:
 
-نمونه اطلاعات حساس:
+1. Worker تمام درخواست‌های ورودی رو پردازش می‌کنه
+2. تنظیمات توی Cloudflare KV ذخیره می‌شن
+3. IPهای تمیز از Matix Scanner گرفته می‌شن
+4. لینک‌های کانفیگ در همون لحظه ساخته می‌شن
+5. ربات تلگرام از طریق webhook کار می‌کنه
+6. به‌روزرسانی‌ها مستقیم از GitHub Releases کشیده می‌شن
 
-```text
-API_KEY
-BOT_TOKEN
-SECRET_KEY
-PASSWORD
-PRIVATE_TOKEN
-```
-
-این موارد را از مسیر Variables and Secrets به‌عنوان **Secret** اضافه کنید.
-
-### ⚠️ نکته بسیار مهم
-
-❌ این کار را انجام ندهید:
-
-```js
-const TOKEN = "YOUR_SECRET_TOKEN";
-```
-
-✅ روش صحیح:
-
-مقدار را در Cloudflare به‌صورت Secret ذخیره کنید و در Worker از محیط `env` دریافت کنید.
+همه چیز Serverless و رایگانه.
 
 ---
 
-## 🗄️ ساخت و اتصال Cloudflare KV
+## چند نکته که بد نیست بدونی
 
-اگر پروژه به ذخیره‌سازی داده نیاز دارد، می‌توانید از Cloudflare KV استفاده کنید.
-
-در Cloudflare وارد بخش KV شوید و یک Namespace ایجاد کنید.
-
-برای مثال:
-
-```text
-MATIX_KV
-```
-
-سپس از قسمت Bindings آن را به Worker متصل کنید.
-
-برای نمونه نام Binding:
-
-```text
-KV
-```
-
-در کد می‌توانید بنویسید:
-
-```js
-await env.KV.put("test", "Hello MatiX");
-
-const value = await env.KV.get("test");
-```
-
-**توجه:** نام Binding در Cloudflare باید دقیقاً با نامی که در کد استفاده می‌کنید یکسان باشد.
+- پنل روی پلن رایگان Cloudflare برای استفاده‌های معمولی راحت اجرا می‌شه.
+- توکن Cloudflare فقط برای راه‌اندازی استفاده می‌شه و ذخیره نمی‌شه.
+- بعد از راه‌اندازی، می‌تونی توکن رو از داشبورد Cloudflare حذف کنی.
+- هیچ داده‌ای جمع‌آوری نمی‌شه، هیچ کلیدی ذخیره نمی‌شه، هیچی ردیابی نمی‌شه.
 
 ---
 
-## 🔄 اتصال پروژه به GitHub
+## ساخته‌شده با
 
-برای مدیریت نسخه‌های پروژه می‌توانید یک Repository در GitHub ایجاد کنید.
-
-ساختار پیشنهادی:
-
-```text
-MatiX-Worker/
-├── worker.js
-├── README.md
-├── README_FA.md
-├── LICENSE
-└── wrangler.toml
-```
-
-پس از آن می‌توانید Repository را به Cloudflare متصل کنید تا انتشار و مدیریت نسخه‌ها ساده‌تر شود.
+- JavaScript — Worker اصلی
+- Cloudflare Workers — محیط اجرا
+- Cloudflare KV — ذخیره‌سازی داده
+- GitHub Pages / Releases — توزیع
+- Vazirmatn + Manrope — فونت‌ها
 
 ---
 
-## 🧭 راه‌اندازی سریع
+## Wizard
 
-اگر می‌خواهید سریع پروژه را اجرا کنید:
-
-**۱.** فایل `worker.js` را باز کنید.  
-**۲.** Variables و Secrets موردنیاز را در Cloudflare تنظیم کنید.  
-**۳.** اگر پروژه به KV نیاز دارد، KV را بسازید و Binding آن را تنظیم کنید.  
-**۴.** Worker را Deploy کنید.  
-**۵.** آدرس Worker ساخته‌شده را آزمایش کنید.
-
-برای جزئیات بیشتر، مراحل این راهنما را به ترتیب انجام دهید.
+👉 https://matix-wizard.imatixofficel.workers.dev/
 
 ---
 
-## 📜 مجوز پروژه
+## با من در ارتباط باش
 
-مجوز استفاده از پروژه در فایل [`LICENSE`](LICENSE) قرار دارد.
-
----
-
-## 📱 ارتباط با MatiX
-
-- ✈️ تلگرام: **@Imatix7**
-- 📸 اینستاگرام: **@imatix_**
+- 📺 یوتیوب: https://youtube.com/@i.matix7
+- ✈️ تلگرام: https://t.me/Imatix7
 
 ---
-
-<div align="center">
-
