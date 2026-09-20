@@ -1,277 +1,126 @@
 ```markdown
-# 🕊️ MatiX Worker
+# 🕊️ Matix Scanner — Cloudflare IP Scanner
 
 > **In the name of God**
 
-A lightweight, fast, and extensible project for Cloudflare Workers.
+**Find clean, fast Cloudflare IPs — automatically, every 10 minutes.**
 
-🇬🇧 **English** · 🇮🇷 [فارسی](README_FA.md)
+🌐 **Live Demo:** [https://imatixofficel.github.io/Scanner-matix/](https://imatixofficel.github.io/Scanner-matix/)
 
 ---
 
-## 📖 About
+## 📖 What is this?
 
-MatiX Worker is an open-source, lightweight project for running serverless services on Cloudflare Workers.
+Matix Scanner is a simple, free tool that finds working Cloudflare IPs for your **VLESS**, **Trojan**, or **Shadowsocks** configs.
 
-It can be used to build APIs, web services, bots, online tools, and web or mobile projects.
+It runs quietly in the background **every 10 minutes**, tests thousands of IPs with real **TCP + TLS handshakes** and **HTTP requests**, checks their real **download speed**, and keeps only the ones that are actually alive and fast.
 
-The goal is to make setting up and managing a Worker as **simple, understandable, and customizable** as possible.
+No fake data. No duplicates. No API keys. Just clean, tested IPs.
 
 ---
 
 ## ✨ Features
 
 - ⚡ **Fast and lightweight** — no heavy dependencies
-- ☁️ **Runs on Cloudflare Workers** — serverless, no setup
-- 🔐 **Supports Variables and Secrets** — for sensitive data
-- 🗄️ **Supports Cloudflare KV** — for data storage
-- 🔄 **Ready for GitHub integration** — version control
-- 📱 **Suitable for web and mobile** — cross-platform
-- 🧩 **Extensible and customizable** — full freedom
-- 🌐 **Serverless architecture** — scalable and economical
-- 🧙 **Automated setup via MatiX Wizard** — just one token
+- 🔄 **Always fresh** — updated every 10 minutes, 24/7
+- 🎯 **Real testing** — real TCP + TLS + HTTP, not a copied list
+- ⚡ **Speed-tested** — top 100 IPs are benchmarked for download speed
+- 💎 **Persistent tracking** — stable IPs get marked as persistent
+- 🧹 **Zero duplicates** — every IP appears only once
+- 🆓 **Free forever** — no backend, no server, no cost
 
 ---
 
-## 🧙 Automated Setup with MatiX Wizard
+## 🚀 How to use it
 
-> The easiest way to create and set up the panel is using **MatiX Wizard**. All you need is a Cloudflare API token — the rest is automated.
+1. Open 👉 [https://imatixofficel.github.io/Scanner-matix/](https://imatixofficel.github.io/Scanner-matix/)
+2. Click **Start Scan**
+3. Pick how many IPs you want
+4. Copy the best ones into your config
 
-🔗 **Wizard URL:** [https://matix-wizard.imatixofficel.workers.dev/](https://matix-wizard.imatixofficel.workers.dev/)
-
-### ✅ Prerequisites
-
-- **Cloudflare account** (free)
-- **Cloudflare API Token** with these permissions:
-  - `Workers Scripts: Edit`
-  - `Workers KV Storage: Edit`
-  - `Account Settings: Read`
-
-### 🔑 Creating a Cloudflare Token
-
-1. Open [https://dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens)
-2. Click **Create Token**.
-3. Choose the **Edit Cloudflare Workers** template.
-4. Ensure these permissions are enabled:
-   - Account → Workers Scripts → **Edit**
-   - Account → Workers KV Storage → **Edit**
-   - Account → Account Settings → **Read**
-5. Under **Account Resources**, select your account.
-6. Click **Continue to summary** → **Create Token**.
-7. **Copy** the token and store it safely.
-
-> ⚠️ This token is shown only once.
-
-### 🚀 Setup Steps
-
-1. Open the Wizard URL.
-2. Paste your Cloudflare token into the input field.
-3. Click **Start**.
-4. The Wizard will automatically:
-   - ✅ Create the required **KV Namespace**
-   - ✅ Create the **Worker** for the panel
-   - ✅ Set up **Variables** and **Secrets** (including `ADMIN` and `UUID`)
-   - ✅ Bind KV to the Worker
-   - ✅ Perform the final **Deploy**
-5. The Wizard shows your panel URL. Example:
-```
-
-https://matix-worker.YOURNAME.workers.dev
-
-```
-6. Log in to the panel:
-```
-
-https://matix-worker.YOURNAME.workers.dev/login
-
-```
-   The password is whatever you set as `ADMIN`.
-
-### 📊 Setup Report
-
-The Wizard reports each step as it runs, showing what has been done and what is currently in progress. If an error occurs, the reason is displayed.
-
-### ⚠️ Security Notes
-
-- The Cloudflare token is used **only during setup** and **is not stored**.
-- After setup is complete, you can **Revoke** the token from the Cloudflare dashboard.
-- Never commit the token to a public place (such as GitHub).
+That's it.
 
 ---
 
-## 📁 Project Structure
+## 📊 What you get
 
+Every scan gives you a structured list like this:
+
+```json
+{
+  "ip": "104.25.195.64",
+  "ms": 82,
+  "status": "online",
+  "colo": "SEA",
+  "speed_mbps": 17.55,
+  "persistent": false,
+  "online_count": 1
+}
 ```
 
-MatiX-Worker/
-├── worker.js
-├── README.md
-├── README_FA.md
-├── LICENSE
-└── wrangler.toml
-
-```
-
-### 📄 Main File
-
-The `worker.js` file is the core of the Worker, containing the project's execution logic.
+· ⏱️ ms — how fast the IP responds
+· 🌍 colo — which Cloudflare edge answered (SEA, FRA, AMS, …)
+· ⚡ speed_mbps — actual download speed
+· 💎 persistent — whether this IP has been stable over time
 
 ---
 
-## 🛠️ Manual Setup (Without Wizard)
+💎 Persistent IPs
 
-### 1. Create the Project Folder
+Some IPs keep working for days or weeks. Matix tracks these automatically.
 
-```bash
-mkdir MatiX-Worker
-cd MatiX-Worker
-```
+If an IP is seen online 3 or more times in the last 7 days, it gets marked as persistent and highlighted with a 💎 in the UI.
 
-Create the main file:
-
-```
-worker.js
-```
-
-Then paste the Worker code into it.
-
-2. Create the Worker in Cloudflare
-
-Go to the Cloudflare dashboard and create a Worker from:
-
-```
-Workers & Pages → Create → Workers → Create Worker
-```
-
-Pick a name for the project; for example:
-
-```
-matix-worker
-```
-
-Then create and Deploy the Worker.
-
-3. Add the Code
-
-Open the Worker, paste the contents of worker.js into the code editor, then click:
-
-```
-Save and Deploy
-```
-
-After a successful Deploy, Cloudflare gives you a URL for the Worker.
+💎 Persistent IPs tend to be more stable and more reliable than fresh ones.
 
 ---
 
-🔐 Variables and Secrets
+⚙️ How it works behind the scenes
 
-For non-sensitive settings, use Variables.
+Every 10 minutes, Matix:
 
-Typical path:
+1. 🎲 Samples 7,500 IPs from Cloudflare ranges
+2. 🔌 Tests each one with real TCP + TLS
+3. 🌐 Verifies with real HTTP requests
+4. ⚡ Benchmarks speed on the best 100
+5. 🧹 Removes duplicates
+6. 💎 Tracks persistent IPs
+7. 💾 Saves the results
+8. 📤 Publishes them on GitHub Pages
 
-```
-Workers & Pages → Worker → Settings → Variables and Secrets
-```
-
-For sensitive information such as the following, use Secrets:
-
-· API_KEY
-· BOT_TOKEN
-· SECRET_KEY
-· PASSWORD
-· PRIVATE_TOKEN
-· ADMIN
-· UUID
-
-⚠️ Security Note
-
-❌ Wrong: Never put secrets inside worker.js or a public repository.
-
-```javascript
-const TOKEN = "YOUR_SECRET_TOKEN";   // ❌
-```
-
-✅ Correct: Store sensitive values as Secrets in Cloudflare and read them from the Worker environment.
+Everything runs on GitHub Actions — completely free.
 
 ---
 
-🗄️ Using Cloudflare KV
+⚠️ Good to know
 
-To store data needed by the Worker, you can use Cloudflare KV.
-
-Create a KV Namespace in Cloudflare and bind it to the Worker under Bindings.
-
-For example, name the Binding:
-
-```
-KV
-```
-
-In code:
-
-```javascript
-await env.KV.put("test", "Hello MatiX");
-const value = await env.KV.get("test");
-```
-
-Note: The Binding name in Cloudflare must exactly match the name used in the code.
+· 📍 Latency is measured from GitHub servers, not from your own network. Your real ping might be different — always test on your own device if you can.
+· 😴 If no commit is made for 60 days, GitHub may pause the automatic scans. Just make a small change occasionally to keep it running.
+· 🌍 The repository must stay Public to keep GitHub Actions free.
+· 🔒 No data is collected, no keys are stored, nothing is tracked.
 
 ---
 
-🔄 GitHub Integration
+🛠️ Built with
 
-Create a repository on GitHub and place the project files in it.
-
-Once the repository is connected to Cloudflare, you can use GitHub to manage versions and publish changes.
-
----
-
-🧭 Quick Start
-
-If you just want to explore the project:
-
-1. Open worker.js.
-2. Set the required Variables and Secrets in Cloudflare.
-3. Bind KV if needed.
-4. Deploy the Worker.
-5. Test the URL generated by Cloudflare.
+· 🐍 Python 3.11 — the scanner
+· 💻 Vanilla JavaScript — the website
+· ⚙️ GitHub Actions — the automation
+· 🌐 GitHub Pages — the hosting
+· 🔤 Vazirmatn + Manrope — the fonts
 
 ---
 
-🆘 Wizard Troubleshooting
+🌐 Live Demo
 
-"Invalid API Token" error
-
-· Make sure you pasted the token completely, without spaces.
-· Verify that the required permissions are enabled on the token.
-· If the token has expired, create a new one.
-
-"KV Namespace already exists" error
-
-· A KV with the same name already exists. You can delete it from the Cloudflare dashboard or choose a different name.
-
-"Worker name already taken" error
-
-· The Worker name is already in use. Enter a different name in the Wizard.
-
-Panel doesn't come up after Deploy
-
-· Wait a few minutes; Worker propagation can take a moment.
-· Clear your browser cache (Ctrl + F5).
-· Make sure the KV binding is attached with the exact name KV.
+👉 https://imatixofficel.github.io/Scanner-matix/
 
 ---
 
-📜 License
-
-This project is released under the MIT License. See LICENSE for details.
-
----
-
-📱 Connect with MatiX
+📱 Connect with me
 
 · ✈️ Telegram: @Imatix7
-· 📸 Instagram: @imatix_
+· 📺 YouTube: @i.matix7
 · 🐙 GitHub: imatixofficel
 
 ---
