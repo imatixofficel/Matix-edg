@@ -1,11 +1,11 @@
-```markdown
+markdown
 # Matix Scanner — Cloudflare IP Scanner
 
-> In the name of God
+**In the name of God**
 
 Find clean, fast Cloudflare IPs — automatically, every 10 minutes.
 
-🌐 **Live Demo:** https://imatixofficel.github.io/Scanner-matix/
+🌐 **Live Demo:** [https://imatixofficel.github.io/Scanner-matix/](https://imatixofficel.github.io/Scanner-matix/)
 
 ---
 
@@ -45,7 +45,8 @@ That's it.
 
 Every scan gives you a structured list like this:
 
-```json
+
+json
 {
   "ip": "104.25.195.64",
   "ms": 82,
@@ -55,7 +56,7 @@ Every scan gives you a structured list like this:
   "persistent": false,
   "online_count": 1
 }
-```
+
 
 · ms — how fast the IP responds
 · colo — which Cloudflare edge answered (SEA, FRA, AMS, …)
@@ -64,11 +65,11 @@ Every scan gives you a structured list like this:
 
 ---
 
-Persistent IPs 💎
+Persistent IPs
 
 Some IPs keep working for days or weeks. Matix tracks these automatically.
 
-If an IP is seen online 3 or more times in the last 7 days, it gets marked as persistent and highlighted with a 💎 in the UI.
+If an IP is seen online 3 or more times in the last 7 days, it gets marked as persistent and highlighted with a diamond in the UI.
 
 Persistent IPs tend to be more stable and more reliable than fresh ones.
 
@@ -118,12 +119,8 @@ Live Demo
 
 Connect with me
 
-· Telegram: https://t.me/Imatix7
-· YouTube: https://youtube.com/@i.matix7
-· GitHub: https://github.com/imatixofficel
+· 📺 YouTube: https://youtube.com/@i.matix7
+· ✈️ Telegram: https://t.me/Imatix7
 
 ---
 
-In the name of God
-
-```
