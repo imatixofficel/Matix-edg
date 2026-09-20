@@ -1,6 +1,53 @@
 const Version = '2026-08-11 14:45:22';
+// [AUTO-VERSION] Fallback only; the active worker version is stored in KV.
 const MATIX_RELEASE_TAG = 'v1.0.0';
 const MATIX_RELEASE_REPO = 'imatixofficel/Matix-edg';
+
+// [AUTO-VERSION] Cached current worker version.
+let MATIX_RELEASE_TAG_CACHE = null;
+
+// [AUTO-VERSION] Resolve the version this deployed worker is running.
+async function 获取当前版本(env) {
+	if (MATIX_RELEASE_TAG_CACHE) return MATIX_RELEASE_TAG_CACHE;
+	try {
+		if (env && env.KV) {
+			const kvVersion = await env.KV.get('matix_worker_version');
+			if (kvVersion) {
+				MATIX_RELEASE_TAG_CACHE = kvVersion;
+				return kvVersion;
+			}
+		}
+	} catch (e) { console.warn('[AUTO-VERSION] KV read version failed:', e.message); }
+	try {
+		const headers = { 'User-Agent': 'Matix-Edge', 'Accept': 'application/vnd.github+json' };
+		if (env && env.GITHUB_TOKEN) headers['Authorization'] = 'Bearer ' + env.GITHUB_TOKEN;
+		const res = await fetch('https://api.github.com/repos/' + MATIX_RELEASE_REPO + '/releases/latest', { headers, cf: { cacheTtl: 300 } });
+		if (res.ok) {
+			const data = await res.json();
+			const latest = data.tag_name;
+			if (latest) {
+				if (env && env.KV) await env.KV.put('matix_worker_version', latest);
+				MATIX_RELEASE_TAG_CACHE = latest;
+				return latest;
+			}
+		}
+	} catch (e) { console.warn('[AUTO-VERSION] GitHub version fetch failed:', e.message); }
+	return MATIX_RELEASE_TAG;
+}
+
+// [AUTO-VERSION] Semantic-ish numeric comparison for release tags such as v2.0.1.
+function compareVersions(a, b) {
+	if (!a || !b) return 0;
+	const pa = String(a).replace(/^v/, '').split(/[.\-+]/).map(x => parseInt(x, 10) || 0);
+	const pb = String(b).replace(/^v/, '').split(/[.\-+]/).map(x => parseInt(x, 10) || 0);
+	for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+		const na = pa[i] || 0, nb = pb[i] || 0;
+		if (na > nb) return 1;
+		if (na < nb) return -1;
+	}
+	return 0;
+}
+
 const MATIX_SCANNER_URL = 'https://imatixofficel.github.io/Scanner-matix/data/clean_ips.json';
 const MATIX_SCANNER_ENABLED = true;
 let config_JSON, 缓存SOCKS5白名单 = null, 调试日志打印 = false;
@@ -353,6 +400,18 @@ export default {
 									accountId = accData.result[0].id;
 								}
 
+								// [AUTO-VERSION] Resolve the release tag that is about to be installed.
+								let updateReleaseTag = MATIX_RELEASE_TAG;
+								try {
+									const ghHeaders = { 'User-Agent': 'Matix-Edge', 'Accept': 'application/vnd.github+json' };
+									if (env.GITHUB_TOKEN) ghHeaders['Authorization'] = 'Bearer ' + env.GITHUB_TOKEN;
+									const releaseRes = await fetch('https://api.github.com/repos/' + MATIX_RELEASE_REPO + '/releases/latest', { headers: ghHeaders, cf: { cacheTtl: 0 } });
+									if (releaseRes.ok) {
+										const releaseData = await releaseRes.json();
+										if (releaseData.tag_name) updateReleaseTag = releaseData.tag_name;
+									}
+								} catch (e) { console.warn('[AUTO-VERSION] Release tag lookup failed:', e.message); }
+
 								const workerName = settings.workerName || host.split('.')[0];
 								const kvId = settings.kvId || env.KV_ID || null;
 								if (!kvId) return new Response(JSON.stringify({ error: 'KV namespace ID is unknown. Please set it manually in update settings (Cloudflare dashboard → Workers & Pages → KV).' }), { status: 400, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
@@ -387,6 +446,9 @@ export default {
 									return new Response(JSON.stringify({ error: 'Cloudflare rejected the update', details: uploadData.errors || uploadData }), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 								}
 
+								// [AUTO-VERSION] Persist the version only after Cloudflare accepted the new Worker.
+								await env.KV.put('matix_worker_version', updateReleaseTag || MATIX_RELEASE_TAG || 'v2.0.0');
+								MATIX_RELEASE_TAG_CACHE = updateReleaseTag || MATIX_RELEASE_TAG || 'v2.0.0';
 								ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Self_Update', config_JSON));
 								return new Response(JSON.stringify({ success: true, message: 'Panel updated successfully. Reload the page in a few seconds.' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 							} catch (error) {
@@ -401,15 +463,28 @@ export default {
 						return new Response(本地优选IP, { status: 200, headers: { 'Content-Type': 'text/plain;charset=utf-8', 'asn': request.cf.asn } });
 					} else if (访问路径 === 'admin/cf.json') {// CF配置文件
 						return new Response(JSON.stringify(request.cf, null, 2), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
-					} else if (访问路径 === 'admin/update-check.json') {// بررسی آخرین نسخه از GitHub
+					} else if (访问路径 === 'admin/update-check.json') {// [AUTO-VERSION] بررسی آخرین نسخه از GitHub
 						try {
-							const res = await fetch('https://api.github.com/repos/' + MATIX_RELEASE_REPO + '/releases/latest', { headers: { 'User-Agent': 'Matix-Edge' } });
-							if (!res.ok) throw new Error('GitHub API status ' + res.status);
+							const currentVersion = await 获取当前版本(env);
+							const headers = { 'User-Agent': 'Matix-Edge', 'Accept': 'application/vnd.github+json' };
+							if (env.GITHUB_TOKEN) headers['Authorization'] = 'Bearer ' + env.GITHUB_TOKEN;
+							const res = await fetch('https://api.github.com/repos/' + MATIX_RELEASE_REPO + '/releases/latest', { headers, cf: { cacheTtl: 0 } });
+							if (!res.ok) throw new Error('GitHub API ' + res.status);
 							const data = await res.json();
 							const latest = data.tag_name || null;
-							return new Response(JSON.stringify({ current: MATIX_RELEASE_TAG, latest, updateAvailable: !!latest && latest !== MATIX_RELEASE_TAG, url: data.html_url || null }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
+							return new Response(JSON.stringify({
+								current: currentVersion,
+								latest: latest,
+								name: data.name || latest,
+								publishedAt: data.published_at || null,
+								body: (data.body || '').slice(0, 600),
+								htmlUrl: data.html_url || null,
+								downloadUrl: (data.assets || []).find(a => a.name === 'worker.js')?.browser_download_url || null,
+								updateAvailable: !!latest && latest !== currentVersion,
+								isNewer: compareVersions(latest, currentVersion) > 0
+							}), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8', 'Cache-Control': 'no-store, no-cache, must-revalidate' } });
 						} catch (error) {
-							return new Response(JSON.stringify({ error: 'Failed to check for updates: ' + error.message }), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
+							return new Response(JSON.stringify({ error: 'Failed to check for updates: ' + error.message, current: await 获取当前版本(env) }), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8', 'Cache-Control': 'no-store' } });
 						}
 					} else if (访问路径 === 'admin/update-settings.json') {// خواندن تنظیمات ذخیره‌شده‌ی به‌روزرسانی (بدون افشای توکن)
 						try {
@@ -7395,6 +7470,13 @@ function matrixEdgeAdminDashboard() {
     padding:0 16px; font-size:12.5px; cursor:pointer; white-space:nowrap;}
   .copy:hover{filter:brightness(1.1);}
 
+  .matix-update-progress{display:none;margin-top:12px;padding:10px 12px;border:1px solid rgba(59,130,246,.22);border-radius:14px;background:rgba(37,99,235,.055);overflow:hidden;}
+  .matix-update-progress.show{display:block;}
+  .matix-update-progress-track{height:5px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden;position:relative;}
+  .matix-update-progress-glow{width:38%;height:100%;border-radius:999px;background:linear-gradient(90deg,transparent,#38bdf8,#60a5fa,#a78bfa,transparent);box-shadow:0 0 14px rgba(56,189,248,.65);animation:matixUpdateFlow 1.35s ease-in-out infinite;}
+  .matix-update-progress-label{margin-top:7px;font-size:12px;color:var(--muted);text-align:center;}
+  @keyframes matixUpdateFlow{0%{transform:translateX(-130%)}100%{transform:translateX(360%)}}
+
   .save-bar{position:sticky; bottom:0; z-index:3; display:flex; justify-content:flex-end; gap:10px; padding:14px 0 0;}
   button.primary{background:linear-gradient(90deg, #1d4ed8, #3b82f6, #0891b2); background-size:200% 100%;
     border:none; color:#fff; font-weight:700; font-size:13.5px; padding:11px 22px; border-radius:12px; cursor:pointer;
@@ -7779,6 +7861,10 @@ function matrixEdgeAdminDashboard() {
       </div>
       <p class="muted" style="margin-top:10px"><span data-fa>این عملیات خود Worker رو با آخرین نسخه از گیت‌هاب جایگزین می‌کنه؛ قبل از استفاده روی یک اکانت تستی امتحانش کن.</span><span data-en>This overwrites the Worker itself with the latest GitHub release. Test on a non-critical account first.</span></p>
       <div class="muted" id="updateStatus" style="margin-top:6px"></div>
+      <div id="updateProgress" class="matix-update-progress" aria-hidden="true">
+        <div class="matix-update-progress-track"><div class="matix-update-progress-glow"></div></div>
+        <div class="matix-update-progress-label"><span data-fa>در حال آپلود و نصب نسخه جدید…</span><span data-en>Uploading and installing the new version…</span></div>
+      </div>
     </div>
 
     <div class="card wide" id="logs">
@@ -7949,6 +8035,8 @@ function matrixEdgeAdminDashboard() {
       : 'Are you sure? This will overwrite the Worker itself with the latest GitHub release. Make sure you saved your settings first.');
     if (!sure) return;
     updateStatusEl.textContent = faOn() ? 'در حال به‌روزرسانی... چند ثانیه صبر کن' : 'Updating... please wait a few seconds';
+    const updateProgressEl = document.getElementById('updateProgress');
+    if (updateProgressEl) updateProgressEl.classList.add('show');
     try {
       const res = await fetch('/admin/self-update', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({}) });
       const data = await res.json();
@@ -7960,6 +8048,7 @@ function matrixEdgeAdminDashboard() {
         toast(faOn() ? 'به‌روزرسانی ناموفق بود' : 'Update failed', true);
       }
     } catch (e) { updateStatusEl.textContent = 'Error: ' + e.message; }
+    finally { if (updateProgressEl) updateProgressEl.classList.remove('show'); }
   };
 
   const toastEl = document.getElementById('toast');
