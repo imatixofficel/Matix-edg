@@ -1,6 +1,8 @@
 const Version = '2026-08-11 14:45:22';
 const MATIX_RELEASE_TAG = 'v1.0.0';
 const MATIX_RELEASE_REPO = 'imatixofficel/Matix-edg';
+const MATIX_SCANNER_URL = 'https://imatixofficel.github.io/Scanner-matix/data/clean_ips.json';
+const MATIX_SCANNER_ENABLED = true;
 let config_JSON, 缓存SOCKS5白名单 = null, 调试日志打印 = false;
 let SOCKS5白名单 = ['*tapecontent.net', '*cloudatacdn.com', '*loadshare.org', '*cdn-centaurus.com', 'scholar.google.com'];
 const Pages静态页面 = 'https://edt-pages.github.io';
@@ -5751,7 +5753,8 @@ async function 读取config_JSON(env, hostname, userID, UA = "Mozilla/5.0", 重�
 			SUBUpdateTime: 3, // 订阅更新时间（小时）
 			LIMIT_DAYS: 30, // مدت اعتبار اشتراک (روز)
 			LIMIT_GB: 100, // سقف حجم اعلامی اشتراک (گیگابایت)
-			CLEAN_IP_SOURCE: "https://raw.githubusercontent.com/vfarid/cf-clean-ips/main/list.json",
+			CLEAN_IP_SOURCE: MATIX_SCANNER_URL,
+			USE_MATIX_SCANNER: true,
 			TOKEN: await MD5MD5(hostname + userID),
 		},
 		订阅转换配置: {
@@ -5846,10 +5849,17 @@ async function 读取config_JSON(env, hostname, userID, UA = "Mozilla/5.0", 重�
 	if (!config_JSON.启用0RTT) config_JSON.启用0RTT = false;
 	if (!Number.isFinite(Number(config_JSON.优选订阅生成.LIMIT_DAYS)) || Number(config_JSON.优选订阅生成.LIMIT_DAYS) < 1) config_JSON.优选订阅生成.LIMIT_DAYS = 30;
 	if (!Number.isFinite(Number(config_JSON.优选订阅生成.LIMIT_GB)) || Number(config_JSON.优选订阅生成.LIMIT_GB) < 0) config_JSON.优选订阅生成.LIMIT_GB = 100;
-	if (typeof config_JSON.优选订阅生成.CLEAN_IP_SOURCE !== 'string') config_JSON.优选订阅生成.CLEAN_IP_SOURCE = "https://raw.githubusercontent.com/vfarid/cf-clean-ips/main/list.json";
+	if (typeof config_JSON.优选订阅生成.CLEAN_IP_SOURCE !== 'string') config_JSON.优选订阅生成.CLEAN_IP_SOURCE = MATIX_SCANNER_URL;
 
 	if (env.PATH) config_JSON.PATH = env.PATH.startsWith('/') ? env.PATH : '/' + env.PATH;
 	else if (!config_JSON.PATH) config_JSON.PATH = '/';
+
+	if (config_JSON.优选订阅生成.USE_MATIX_SCANNER === undefined) {
+		config_JSON.优选订阅生成.USE_MATIX_SCANNER = true;
+	}
+	if (!config_JSON.优选订阅生成.CLEAN_IP_SOURCE || config_JSON.优选订阅生成.CLEAN_IP_SOURCE.includes('vfarid')) {
+		config_JSON.优选订阅生成.CLEAN_IP_SOURCE = MATIX_SCANNER_URL;
+	}
 
 	if (!config_JSON.gRPC模式) config_JSON.gRPC模式 = 'gun';
 	if (!config_JSON.SS) config_JSON.SS = { 加密方式: "aes-128-gcm", TLS: false };
@@ -5996,8 +6006,58 @@ function 识别运营商(request) {
 	return 命中运营商 || ASN运营商映射[String(cf?.asn || '')] || 'cf';
 }
 
+async function 获取MatixScannerIP(request, count = 16, 指定端口 = -1) {
+    if (!MATIX_SCANNER_ENABLED) throw new Error('Matix Scanner disabled');
+    const cfport = [443, 2053, 2083, 2087, 2096, 8443];
+    try {
+        const res = await fetch(MATIX_SCANNER_URL + '?t=' + Date.now(), {
+            headers: { 'Accept': 'application/json' },
+            cf: { cacheTtl: 60 }
+        });
+        if (!res.ok) throw new Error('Scanner HTTP ' + res.status);
+        const data = await res.json();
+        if (!data.results || !Array.isArray(data.results)) throw new Error('Invalid JSON');
+
+        const seenIPs = new Set();
+        const uniqueIPs = [];
+        for (const r of data.results) {
+            if (r.status === 'online' && r.ip && /^\d+\.\d+\.\d+\.\d+$/.test(r.ip) && !seenIPs.has(r.ip)) {
+                seenIPs.add(r.ip);
+                uniqueIPs.push(r);
+            }
+        }
+
+        const onlineIPs = uniqueIPs
+            .sort((a, b) => (a.ms || 9999) - (b.ms || 9999))
+            .slice(0, count);
+
+        if (!onlineIPs.length) throw new Error('No online IPs');
+
+        const formatted = onlineIPs.map((item, index) => {
+            const 目标端口 = 指定端口 === -1 ? cfport[index % cfport.length] : 指定端口;
+            return `${item.ip}:${目标端口}#Matix-${index + 1}-${item.ms}ms`;
+        });
+
+        log(`[Matix-Scanner] ${formatted.length} IP دریافت شد. بهترین: ${onlineIPs[0].ms}ms`);
+        return [formatted, formatted.join('\n')];
+    } catch (err) {
+        log(`[Matix-Scanner] خطا: ${err.message}`);
+        throw err;
+    }
+}
+
 async function 生成随机IP(request, count = 16, 指定端口 = -1) {
 	const url = new URL(request.url);
+	const 使用自定义IP = url.searchParams.get('customIP') === 'true';
+	const 强制用Scanner = url.searchParams.get('useScanner') === 'true';
+
+	if (!使用自定义IP && (强制用Scanner || config_JSON?.优选订阅生成?.USE_MATIX_SCANNER !== false)) {
+		try {
+			return await 获取MatixScannerIP(request, count, 指定端口);
+		} catch (e) {
+			log(`[生成随机IP] Matix Scanner failed: ${e.message}، fallback`);
+		}
+	}
 	const 查询参数运营商 = String(url.searchParams.get('cnIspCode') || '').toLowerCase();
 	const 运营商文件标识 = ['ct', 'cu', 'cmcc', 'cf'].includes(查询参数运营商) ? 查询参数运营商 : 识别运营商(request);
 	const 运营商名称映射 = {
