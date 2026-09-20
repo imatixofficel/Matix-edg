@@ -1,4 +1,3 @@
-markdown
 # Matix Edge — Cloudflare Workers Panel
 
 **In the name of God**
