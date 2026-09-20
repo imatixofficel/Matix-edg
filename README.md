@@ -1,126 +1,134 @@
 markdown
-# Matix Scanner — Cloudflare IP Scanner
+# Matix Edge — Cloudflare Workers Panel
 
 **In the name of God**
 
-Find clean, fast Cloudflare IPs — automatically, every 10 minutes.
+A lightweight, fast, and easy-to-deploy panel for Cloudflare Workers.
 
-🌐 **Live Demo:** [https://imatixofficel.github.io/Scanner-matix/](https://imatixofficel.github.io/Scanner-matix/)
+🌐 **Wizard:** [https://matix-wizard.imatixofficel.workers.dev/](https://matix-wizard.imatixofficel.workers.dev/)
 
 ---
 
 ## What is this?
 
-Matix Scanner is a simple, free tool that finds working Cloudflare IPs for your VLESS, Trojan, or Shadowsocks configs.
+Matix Edge is a simple, free panel that runs entirely on Cloudflare Workers.
 
-It runs quietly in the background every 10 minutes, tests thousands of IPs with real TCP+TLS handshakes and HTTP requests, checks their real download speed, and keeps only the ones that are actually alive and fast.
+It gives you a clean dashboard to manage your own VLESS / Trojan / Shadowsocks subscription, generate config links, check usage, and control everything from one place.
 
-No fake data. No duplicates. No API keys. Just clean, tested IPs.
+No server, no VPS, no cost. Just deploy once and use it.
 
 ---
 
 ## Why use it?
 
-- Real testing — not a random list copied from somewhere else
-- Always fresh — updated every 10 minutes, 24/7
-- Speed-tested — the top 100 IPs are benchmarked for download speed
-- Smart tracking — IPs that stay alive over time get marked as persistent
-- Zero duplicates — every IP appears only once
-- Free forever — no backend, no server, no cost
+- Fast — runs on Cloudflare's global edge network
+- Free — no server, no cost, no maintenance
+- Easy setup — one-click deploy with the Matix Wizard
+- Clean dashboard — bilingual (Persian + English), dark & light theme
+- Smart subscription — automatically pulls clean IPs from the Matix Scanner
+- Built-in Telegram bot — get your config, check status, reset settings
+- Self-update — update the panel from GitHub with one click
+- Usage tracking — see your Worker requests and quota
 
 ---
 
-## How to use it
+## How to set it up
 
-1. Go to 👉 https://imatixofficel.github.io/Scanner-matix/
-2. Click Start Scan
-3. Pick how many IPs you want
-4. Copy the best ones into your config
+The easiest way is using the Matix Wizard:
 
-That's it.
+1. Go to 👉 https://matix-wizard.imatixofficel.workers.dev/
+2. Paste your Cloudflare API Token
+3. Click Start
+
+The Wizard will automatically:
+
+1. Create a KV Namespace
+2. Create the Worker
+3. Set up Variables and Secrets (ADMIN, UUID)
+4. Bind KV to the Worker
+5. Deploy everything
+
+Once it's done, the Wizard shows you your panel URL:
+
+
+
+https://matix-worker.YOURNAME.workers.dev
+
+
+
+Log in at:
+
+
+
+https://matix-worker.YOURNAME.workers.dev/login
+
+
+
+The password is whatever you set as `ADMIN`.
 
 ---
 
 ## What you get
 
-Every scan gives you a structured list like this:
+A full management dashboard with:
 
-
-json
-{
-  "ip": "104.25.195.64",
-  "ms": 82,
-  "status": "online",
-  "colo": "SEA",
-  "speed_mbps": 17.55,
-  "persistent": false,
-  "online_count": 1
-}
-
-
-· ms — how fast the IP responds
-· colo — which Cloudflare edge answered (SEA, FRA, AMS, …)
-· speed_mbps — actual download speed
-· persistent — whether this IP has been stable over time
+- 🔗 Subscription link
+- 🔗 Single node link
+- ⚙️ Protocol & transport settings
+- 📊 Usage chart
+- ⏳ Subscription limits (days / GB)
+- 🌐 Preferred IP source
+- 🛡️ Proxy settings (SOCKS5 / HTTP / HTTPS)
+- 📋 Custom IP list
+- 🤖 Telegram bot activation
+- 🚀 Self-update from GitHub
+- 🧾 Recent logs
 
 ---
 
-Persistent IPs
+## How it works behind the scenes
 
-Some IPs keep working for days or weeks. Matix tracks these automatically.
+Matix Edge runs entirely on Cloudflare Workers:
 
-If an IP is seen online 3 or more times in the last 7 days, it gets marked as persistent and highlighted with a diamond in the UI.
+1. The Worker handles all incoming requests
+2. Settings are stored in Cloudflare KV
+3. Clean IPs are pulled from the Matix Scanner
+4. Config links are generated on the fly
+5. Telegram bot runs on a webhook
+6. Updates pull directly from GitHub Releases
 
-Persistent IPs tend to be more stable and more reliable than fresh ones.
-
----
-
-How it works behind the scenes
-
-Every 10 minutes, Matix:
-
-1. Samples 7,500 IPs from Cloudflare ranges
-2. Tests each one with real TCP + TLS
-3. Verifies with real HTTP requests
-4. Benchmarks speed on the best 100
-5. Removes duplicates
-6. Tracks persistent IPs
-7. Saves the results
-8. Publishes them on GitHub Pages
-
-Everything runs on GitHub Actions — completely free.
+Everything is serverless and free.
 
 ---
 
-Good to know
+## Good to know
 
-· Latency is measured from GitHub servers, not from your own network. Your real ping might be different — always test on your own device if you can.
-· If no commit is made for 60 days, GitHub may pause the automatic scans. Just make a small change occasionally to keep it running.
-· The repository must stay Public to keep GitHub Actions free.
-· No data is collected, no keys are stored, nothing is tracked.
-
----
-
-Built with
-
-· Python 3.11 — the scanner
-· Vanilla JavaScript — the website
-· GitHub Actions — the automation
-· GitHub Pages — the hosting
-· Vazirmatn + Manrope — the fonts
+- The panel runs on Cloudflare's free tier for normal usage.
+- The Cloudflare API token is used only during setup and is not stored.
+- After setup, you can revoke the token from the Cloudflare dashboard.
+- No data is collected, no keys are stored, nothing is tracked.
 
 ---
 
-Live Demo
+## Built with
 
-👉 https://imatixofficel.github.io/Scanner-matix/
-
----
-
-Connect with me
-
-· 📺 YouTube: https://youtube.com/@i.matix7
-· ✈️ Telegram: https://t.me/Imatix7
+- JavaScript — the Worker
+- Cloudflare Workers — the runtime
+- Cloudflare KV — the storage
+- GitHub Pages / Releases — distribution
+- Vazirmatn + Manrope — the fonts
 
 ---
 
+## Wizard
+
+👉 https://matix-wizard.imatixofficel.workers.dev/
+
+---
+
+## Connect with me
+
+- 📺 YouTube: https://youtube.com/@i.matix7
+- ✈️ Telegram: https://t.me/Imatix7
+
+---
