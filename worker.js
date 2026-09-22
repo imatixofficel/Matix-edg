@@ -1,23 +1,64 @@
 const Version = '2026-08-11 14:45:22';
-// [AUTO-VERSION] Fallback only; the active worker version is stored in KV.
+// [AUTO-VERSION] Fallback only; the active worker version is stored in D1.
 const MATIX_RELEASE_TAG = 'v1.0.0';
 const MATIX_RELEASE_REPO = 'imatixofficel/Matix-edg';
 
 // [AUTO-VERSION] Cached current worker version.
 let MATIX_RELEASE_TAG_CACHE = null;
 
+// [D1-STORAGE] D1-backed key/value compatibility layer.
+// Bind a Cloudflare D1 database as `DB`. The Worker no longer requires KV.
+const D1_TABLE = 'matix_store';
+let D1_INIT_PROMISE = null;
+
+async function 初始化D1(env) {
+	if (!env || !env.DB || typeof env.DB.prepare !== 'function') {
+		throw new Error('D1 binding DB is missing. Bind a Cloudflare D1 database as DB.');
+	}
+	if (!D1_INIT_PROMISE) {
+		D1_INIT_PROMISE = env.DB.prepare(
+			`CREATE TABLE IF NOT EXISTS "${D1_TABLE}" ("key" TEXT PRIMARY KEY NOT NULL, "value" TEXT NOT NULL)`
+		).run().catch(error => {
+			D1_INIT_PROMISE = null;
+			throw error;
+		});
+	}
+	await D1_INIT_PROMISE;
+}
+
+async function D1Get(env, key) {
+	await 初始化D1(env);
+	const row = await env.DB.prepare(`SELECT "value" FROM "${D1_TABLE}" WHERE "key" = ?1`).bind(String(key)).first();
+	return row?.value ?? null;
+}
+
+async function D1Put(env, key, value) {
+	await 初始化D1(env);
+	await env.DB.prepare(
+		`INSERT INTO "${D1_TABLE}" ("key", "value") VALUES (?1, ?2)
+		 ON CONFLICT("key") DO UPDATE SET "value" = excluded."value"`
+	).bind(String(key), String(value)).run();
+	return value;
+}
+
+async function D1Delete(env, key) {
+	await 初始化D1(env);
+	await env.DB.prepare(`DELETE FROM "${D1_TABLE}" WHERE "key" = ?1`).bind(String(key)).run();
+}
+
+
 // [AUTO-VERSION] Resolve the version this deployed worker is running.
 async function 获取当前版本(env) {
 	if (MATIX_RELEASE_TAG_CACHE) return MATIX_RELEASE_TAG_CACHE;
 	try {
-		if (env && env.KV) {
-			const kvVersion = await env.KV.get('matix_worker_version');
+		if (env && env.DB) {
+			const kvVersion = await D1Get(env, 'matix_worker_version');
 			if (kvVersion) {
 				MATIX_RELEASE_TAG_CACHE = kvVersion;
 				return kvVersion;
 			}
 		}
-	} catch (e) { console.warn('[AUTO-VERSION] KV read version failed:', e.message); }
+	} catch (e) { console.warn('[AUTO-VERSION] D1 read version failed:', e.message); }
 	try {
 		const headers = { 'User-Agent': 'Matix-Edge', 'Accept': 'application/vnd.github+json' };
 		if (env && env.GITHUB_TOKEN) headers['Authorization'] = 'Bearer ' + env.GITHUB_TOKEN;
@@ -26,7 +67,7 @@ async function 获取当前版本(env) {
 			const data = await res.json();
 			const latest = data.tag_name;
 			if (latest) {
-				if (env && env.KV) await env.KV.put('matix_worker_version', latest);
+				if (env && env.DB) await D1Put(env, 'matix_worker_version', latest);
 				MATIX_RELEASE_TAG_CACHE = latest;
 				return latest;
 			}
@@ -140,7 +181,7 @@ export default {
 		} else {
 			if (url.protocol === 'http:') return Response.redirect(url.href.replace(`http://${url.hostname}`, `https://${url.hostname}`), 301);
 			if (!管理员密码) return new Response(matrixEdgeSetupNotice('ADMIN'), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8', 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', 'Pragma': 'no-cache', 'Expires': '0' } });
-			if (env.KV && typeof env.KV.get === 'function') {
+			if (env.DB && typeof env.DB.prepare === 'function') {
 				const 区分大小写访问路径 = url.pathname.slice(1);
 				if (区分大小写访问路径 === 加密秘钥 && 加密秘钥 !== '勿动此默认密钥，有需求请自行通过添加变量KEY进行修改') {//快速订阅
 					const params = new URLSearchParams(url.search);
@@ -168,7 +209,7 @@ export default {
 					// 没有cookie或cookie错误，跳转到/login页面
 					if (!authCookie || authCookie !== await MD5MD5(UA + 加密秘钥 + 管理员密码)) return new Response('Redirecting...', { status: 302, headers: { 'Location': '/login' } });
 					if (访问路径 === 'admin/log.json') {// 读取日志内容
-						const 读取日志内容 = await env.KV.get('log.json') || '[]';
+						const 读取日志内容 = await D1Get(env, 'log.json') || '[]';
 						return new Response(读取日志内容, { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 					} else if (区分大小写访问路径 === 'admin/getCloudflareUsage') {// 查询请求量
 						try {
@@ -275,15 +316,15 @@ export default {
 							const errorResponse = { msg: 'Configuration reset failed, reason: ' + err.message, error: err.message };
 							return new Response(JSON.stringify(errorResponse, null, 2), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 						}
-					} else if (request.method === 'POST') {// 处理 KV 操作（POST 请求）
+					} else if (request.method === 'POST') {// 处理 D1 操作（POST 请求）
 						if (访问路径 === 'admin/config.json') { // 保存config.json配置
 							try {
 								const newConfig = await request.json();
 								// 验证配置完整性
 								if (!newConfig.UUID || !newConfig.HOST) return new Response(JSON.stringify({ error: 'Incomplete configuration' }), { status: 400, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 
-								// 保存到 KV
-								await env.KV.put('config.json', JSON.stringify(newConfig, null, 2));
+								// 保存到 D1
+								await D1Put(env, 'config.json', JSON.stringify(newConfig, null, 2));
 								ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Save_Config', config_JSON));
 								return new Response(JSON.stringify({ success: true, message: 'Configuration saved' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 							} catch (error) {
@@ -308,8 +349,8 @@ export default {
 									}
 								}
 
-								// 保存到 KV
-								await env.KV.put('cf.json', JSON.stringify(CF_JSON, null, 2));
+								// 保存到 D1
+								await D1Put(env, 'cf.json', JSON.stringify(CF_JSON, null, 2));
 								ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Save_Config', config_JSON));
 								return new Response(JSON.stringify({ success: true, message: 'Configuration saved' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 							} catch (error) {
@@ -321,13 +362,13 @@ export default {
 								const newConfig = await request.json();
 								if (newConfig.init && newConfig.init === true) {
 									const TG_JSON = { BotToken: null, ChatID: null };
-									await env.KV.put('tg.json', JSON.stringify(TG_JSON, null, 2));
+									await D1Put(env, 'tg.json', JSON.stringify(TG_JSON, null, 2));
 									return new Response(JSON.stringify({ success: true, message: 'Configuration saved' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 								}
 								if (newConfig.disable === true) {
-									const 已存TG = JSON.parse(await env.KV.get('tg.json') || '{}');
+									const 已存TG = JSON.parse(await D1Get(env, 'tg.json') || '{}');
 									if (已存TG?.BotToken) { try { await fetch(`https://api.telegram.org/bot${已存TG.BotToken}/deleteWebhook`); } catch (e) { } }
-									await env.KV.put('tg.json', JSON.stringify({ BotToken: 已存TG?.BotToken || null, ChatID: 已存TG?.ChatID || null, 启用: false }, null, 2));
+									await D1Put(env, 'tg.json', JSON.stringify({ BotToken: 已存TG?.BotToken || null, ChatID: 已存TG?.ChatID || null, 启用: false }, null, 2));
 									return new Response(JSON.stringify({ success: true, message: 'Bot deactivated' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 								}
 								if (!newConfig.BotToken || !newConfig.ChatID) return new Response(JSON.stringify({ error: 'Incomplete configuration' }), { status: 400, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
@@ -337,7 +378,7 @@ export default {
 									const setRes = await fetch(`https://api.telegram.org/bot${newConfig.BotToken}/setWebhook?url=${encodeURIComponent(webhookURL)}`);
 									webhook结果 = await setRes.json();
 								} catch (e) { webhook结果 = { ok: false, description: e.message }; }
-								await env.KV.put('tg.json', JSON.stringify({ BotToken: newConfig.BotToken, ChatID: newConfig.ChatID, 启用: !!webhook结果.ok }, null, 2));
+								await D1Put(env, 'tg.json', JSON.stringify({ BotToken: newConfig.BotToken, ChatID: newConfig.ChatID, 启用: !!webhook结果.ok }, null, 2));
 								if (webhook结果.ok) {
 									try {
 										await fetch(`https://api.telegram.org/bot${newConfig.BotToken}/sendMessage`, {
@@ -355,35 +396,35 @@ export default {
 						} else if (区分大小写访问路径 === 'admin/ADD.txt') { // 保存自定义优选IP
 							try {
 								const customIPs = await request.text();
-								await env.KV.put('ADD.txt', customIPs);// 保存到 KV
+								await D1Put(env, 'ADD.txt', customIPs);// 保存到 D1
 								ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Save_Custom_IPs', config_JSON));
 								return new Response(JSON.stringify({ success: true, message: 'Custom IP list saved' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 							} catch (error) {
-								console.error('保存自定义IP失败:', error);
+								console.error('保存自定义IP到D1失败:', error);
 								return new Response(JSON.stringify({ error: 'Failed to save custom IP list: ' + error.message }), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 							}
 						} else if (访问路径 === 'admin/update-settings.json') { // 保存自更新所需的Cloudflare凭据
 							try {
 								const body = await request.json();
-								const existing = JSON.parse(await env.KV.get('update.json') || '{}');
+								const existing = JSON.parse(await D1Get(env, 'update.json') || '{}');
 								if (body.clear === true) {
-									await env.KV.put('update.json', JSON.stringify({}, null, 2));
+									await D1Put(env, 'update.json', JSON.stringify({}, null, 2));
 									return new Response(JSON.stringify({ success: true, message: 'Update settings cleared' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 								}
 								const next = {
 									cfToken: body.cfToken ? body.cfToken : (existing.cfToken || null),
 									accountId: body.accountId !== undefined ? (body.accountId || null) : (existing.accountId || null),
-									kvId: body.kvId !== undefined ? (body.kvId || null) : (existing.kvId || null),
+									d1Id: body.d1Id !== undefined ? (body.d1Id || null) : (existing.d1Id || null),
 									workerName: body.workerName !== undefined ? (body.workerName || null) : (existing.workerName || null)
 								};
-								await env.KV.put('update.json', JSON.stringify(next, null, 2));
+								await D1Put(env, 'update.json', JSON.stringify(next, null, 2));
 								return new Response(JSON.stringify({ success: true, message: 'Update settings saved' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 							} catch (error) {
 								return new Response(JSON.stringify({ error: 'Failed to save update settings: ' + error.message }), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 							}
 						} else if (访问路径 === 'admin/self-update') { // یک‌کلیکی به‌روزرسانی پنل از GitHub Release
 							try {
-								const settings = JSON.parse(await env.KV.get('update.json') || '{}');
+								const settings = JSON.parse(await D1Get(env, 'update.json') || '{}');
 								const cfToken = settings.cfToken;
 								if (!cfToken) return new Response(JSON.stringify({ error: 'No Cloudflare API token saved yet. Save it first.' }), { status: 400, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 
@@ -413,24 +454,24 @@ export default {
 								} catch (e) { console.warn('[AUTO-VERSION] Release tag lookup failed:', e.message); }
 
 								const workerName = settings.workerName || host.split('.')[0];
-								const kvId = settings.kvId || env.KV_ID || null;
-								if (!kvId) return new Response(JSON.stringify({ error: 'KV namespace ID is unknown. Please set it manually in update settings (Cloudflare dashboard → Workers & Pages → KV).' }), { status: 400, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
+								const d1Id = settings.d1Id || env.D1_ID || null;
+								if (!d1Id) return new Response(JSON.stringify({ error: 'D1 database ID is unknown. Please set it manually in update settings (Cloudflare dashboard → Workers & Pages → D1).' }), { status: 400, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 
 								const scriptRes = await fetch('https://github.com/' + MATIX_RELEASE_REPO + '/releases/latest/download/worker.js');
 								if (!scriptRes.ok) return new Response(JSON.stringify({ error: 'Failed to download the latest worker.js: status ' + scriptRes.status }), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 								const scriptText = await scriptRes.text();
 
-								// همون تنظیمات (KV / ADMIN / UUID) که الان همین Worker داره رو صراحتاً دوباره اعلام می‌کنیم تا موقع آپلود اسکریپت جدید پاک نشن
+								// همون تنظیمات (D1 / ADMIN / UUID) که الان همین Worker داره رو صراحتاً دوباره اعلام می‌کنیم تا موقع آپلود اسکریپت جدید پاک نشن
 								const metadata = {
 									main_module: 'worker.js',
 									compatibility_date: new Date().toISOString().split('T')[0],
 									compatibility_flags: ['nodejs_compat'],
 									bindings: [
-										{ type: 'kv_namespace', name: 'KV', namespace_id: kvId },
+										{ type: 'd1_database', name: 'DB', database_id: d1Id },
 										{ type: 'secret_text', name: 'ADMIN', text: 管理员密码 },
 										{ type: 'secret_text', name: 'UUID', text: userID }
 									],
-									keep_bindings: ['secret_text', 'kv_namespace', 'plain_text']
+									keep_bindings: ['secret_text', 'd1_database', 'plain_text']
 								};
 
 								const form = new FormData();
@@ -447,7 +488,7 @@ export default {
 								}
 
 								// [AUTO-VERSION] Persist the version only after Cloudflare accepted the new Worker.
-								await env.KV.put('matix_worker_version', updateReleaseTag || MATIX_RELEASE_TAG || 'v2.0.0');
+								await D1Put(env, 'matix_worker_version', updateReleaseTag || MATIX_RELEASE_TAG || 'v2.0.0');
 								MATIX_RELEASE_TAG_CACHE = updateReleaseTag || MATIX_RELEASE_TAG || 'v2.0.0';
 								ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Self_Update', config_JSON));
 								return new Response(JSON.stringify({ success: true, message: 'Panel updated successfully. Reload the page in a few seconds.' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
@@ -458,7 +499,7 @@ export default {
 					} else if (访问路径 === 'admin/config.json') {// 处理 admin/config.json 请求，返回JSON
 						return new Response(JSON.stringify(config_JSON, null, 2), { status: 200, headers: { 'Content-Type': 'application/json' } });
 					} else if (区分大小写访问路径 === 'admin/ADD.txt') {// 处理 admin/ADD.txt 请求，返回本地优选IP
-						let 本地优选IP = await env.KV.get('ADD.txt') || 'null';
+						let 本地优选IP = await D1Get(env, 'ADD.txt') || 'null';
 						if (本地优选IP == 'null') 本地优选IP = (await 生成随机IP(request, config_JSON.优选订阅生成.本地IP库.随机数量, config_JSON.优选订阅生成.本地IP库.指定端口))[1];
 						return new Response(本地优选IP, { status: 200, headers: { 'Content-Type': 'text/plain;charset=utf-8', 'asn': request.cf.asn } });
 					} else if (访问路径 === 'admin/cf.json') {// CF配置文件
@@ -488,15 +529,15 @@ export default {
 						}
 					} else if (访问路径 === 'admin/update-settings.json') {// خواندن تنظیمات ذخیره‌شده‌ی به‌روزرسانی (بدون افشای توکن)
 						try {
-							const s = JSON.parse(await env.KV.get('update.json') || '{}');
+							const s = JSON.parse(await D1Get(env, 'update.json') || '{}');
 							return new Response(JSON.stringify({
 								hasToken: !!s.cfToken,
 								accountId: s.accountId || '',
-								kvId: s.kvId || env.KV_ID || '',
+								d1Id: s.d1Id || env.D1_ID || '',
 								workerName: s.workerName || ''
 							}), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 						} catch (error) {
-							return new Response(JSON.stringify({ hasToken: false, accountId: '', kvId: '', workerName: '' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
+							return new Response(JSON.stringify({ hasToken: false, accountId: '', d1Id: '', workerName: '' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 						}
 					}
 
@@ -562,7 +603,7 @@ export default {
 							if (!url.searchParams.has('sub') && config_JSON.优选订阅生成.local) { // 本地生成订阅
 								const 完整优选列表 = config_JSON.优选订阅生成.本地IP库.随机IP ? (
 									await 生成随机IP(request, config_JSON.优选订阅生成.本地IP库.随机数量, config_JSON.优选订阅生成.本地IP库.指定端口)
-								)[0] : await env.KV.get('ADD.txt') ? await 整理成数组(await env.KV.get('ADD.txt')) : (
+								)[0] : await D1Get(env, 'ADD.txt') ? await 整理成数组(await D1Get(env, 'ADD.txt')) : (
 									await 生成随机IP(request, config_JSON.优选订阅生成.本地IP库.随机数量, config_JSON.优选订阅生成.本地IP库.指定端口)
 								)[0];
 								const 优选API = [], 优选IP = [], 其他节点 = [];
@@ -705,7 +746,7 @@ export default {
 					const authCookie = cookies.split(';').find(c => c.trim().startsWith('auth='))?.split('=')[1];
 					if (authCookie && authCookie == await MD5MD5(UA + 加密秘钥 + 管理员密码)) return fetch(new Request('https://speed.cloudflare.com/locations', { headers: { 'Referer': 'https://speed.cloudflare.com/' } }));
 				} else if (访问路径 === 'robots.txt') return new Response('User-agent: *\nDisallow: /', { status: 200, headers: { 'Content-Type': 'text/plain; charset=UTF-8' } });
-			} else if (!envUUID) return new Response(matrixEdgeSetupNotice('KV'), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8', 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', 'Pragma': 'no-cache', 'Expires': '0' } });
+			} else if (!envUUID) return new Response(matrixEdgeSetupNotice('D1'), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8', 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', 'Pragma': 'no-cache', 'Expires': '0' } });
 		}
 
 		let 伪装页URL = env.URL || 'nginx';
@@ -5535,7 +5576,7 @@ async function 请求日志记录(env, request, 访问IP, 请求类型 = "Get_SU
 		const 日志内容 = { TYPE: 请求类型, IP: 访问IP, ASN: `AS${request.cf.asn || '0'} ${request.cf.asOrganization || 'Unknown'}`, CC: `${request.cf.country || 'N/A'} ${request.cf.city || 'N/A'}`, URL: request.url, UA: request.headers.get('User-Agent') || 'Unknown', TIME: 当前时间.getTime() };
 		if (config_JSON.TG.启用) {
 			try {
-				const TG_TXT = await env.KV.get('tg.json');
+				const TG_TXT = await D1Get(env, 'tg.json');
 				const TG_JSON = JSON.parse(TG_TXT);
 				if (TG_JSON?.BotToken && TG_JSON?.ChatID) {
 					const 请求时间 = new Date(日志内容.TIME).toLocaleString('en-GB', { timeZone: 'Asia/Tehran' });
@@ -5564,7 +5605,7 @@ async function 请求日志记录(env, request, 访问IP, 请求类型 = "Get_SU
 		是否写入KV日志 = ['1', 'true'].includes(env.OFF_LOG) ? false : 是否写入KV日志;
 		if (!是否写入KV日志) return;
 		let 日志数组 = [];
-		const 现有日志 = await env.KV.get('log.json'), KV容量限制 = 4;//MB
+		const 现有日志 = await D1Get(env, 'log.json'), D1容量限制 = 4;//MB
 		if (现有日志) {
 			try {
 				日志数组 = JSON.parse(现有日志);
@@ -5573,14 +5614,14 @@ async function 请求日志记录(env, request, 访问IP, 请求类型 = "Get_SU
 					const 三十分钟前时间戳 = 当前时间.getTime() - 30 * 60 * 1000;
 					if (日志数组.some(log => log.TYPE !== "Get_SUB" && log.IP === 访问IP && log.URL === request.url && log.UA === (request.headers.get('User-Agent') || 'Unknown') && log.TIME >= 三十分钟前时间戳)) return;
 					日志数组.push(日志内容);
-					while (JSON.stringify(日志数组, null, 2).length > KV容量限制 * 1024 * 1024 && 日志数组.length > 0) 日志数组.shift();
+					while (JSON.stringify(日志数组, null, 2).length > D1容量限制 * 1024 * 1024 && 日志数组.length > 0) 日志数组.shift();
 				} else {
 					日志数组.push(日志内容);
-					while (JSON.stringify(日志数组, null, 2).length > KV容量限制 * 1024 * 1024 && 日志数组.length > 0) 日志数组.shift();
+					while (JSON.stringify(日志数组, null, 2).length > D1容量限制 * 1024 * 1024 && 日志数组.length > 0) 日志数组.shift();
 				}
 			} catch (e) { 日志数组 = [日志内容] }
 		} else { 日志数组 = [日志内容] }
-		await env.KV.put('log.json', JSON.stringify(日志数组, null, 2));
+		await D1Put(env, 'log.json', JSON.stringify(日志数组, null, 2));
 	} catch (error) { console.error(`日志记录失败: ${error.message}`) }
 }
 
@@ -5819,7 +5860,7 @@ async function 读取config_JSON(env, hostname, userID, UA = "Mozilla/5.0", 重�
 		优选订阅生成: {
 			local: true, // true: 基于本地的优选地址  false: 优选订阅生成器
 			本地IP库: {
-				随机IP: true, // 当 随机IP 为true时生效，启用随机IP的数量，否则使用KV内的ADD.txt
+				随机IP: true, // 当 随机IP 为true时生效，启用随机IP的数量，否则使用D1内的ADD.txt
 				随机数量: 16,
 				指定端口: -1,
 			},
@@ -5897,9 +5938,9 @@ async function 读取config_JSON(env, hostname, userID, UA = "Mozilla/5.0", 重�
 	};
 
 	try {
-		let configJSON = await env.KV.get('config.json');
+		let configJSON = await D1Get(env, 'config.json');
 		if (!configJSON || 重置配置 == true) {
-			await env.KV.put('config.json', JSON.stringify(默认配置JSON, null, 2));
+			await D1Put(env, 'config.json', JSON.stringify(默认配置JSON, null, 2));
 			config_JSON = 默认配置JSON;
 		} else {
 			config_JSON = JSON.parse(configJSON);
@@ -6004,9 +6045,9 @@ async function 读取config_JSON(env, hostname, userID, UA = "Mozilla/5.0", 重�
 	const 初始化TG_JSON = { BotToken: null, ChatID: null, 启用: false };
 	config_JSON.TG = { 启用: false, BotToken: null, ChatID: null };
 	try {
-		const TG_TXT = await env.KV.get('tg.json');
+		const TG_TXT = await D1Get(env, 'tg.json');
 		if (!TG_TXT) {
-			await env.KV.put('tg.json', JSON.stringify(初始化TG_JSON, null, 2));
+			await D1Put(env, 'tg.json', JSON.stringify(初始化TG_JSON, null, 2));
 		} else {
 			const TG_JSON = JSON.parse(TG_TXT);
 			config_JSON.TG.ChatID = TG_JSON.ChatID ? TG_JSON.ChatID : null;
@@ -6020,9 +6061,9 @@ async function 读取config_JSON(env, hostname, userID, UA = "Mozilla/5.0", 重�
 	const 初始化CF_JSON = { Email: null, GlobalAPIKey: null, AccountID: null, APIToken: null, UsageAPI: null };
 	config_JSON.CF = { ...初始化CF_JSON, Usage: { success: false, pages: 0, workers: 0, total: 0, max: 100000 } };
 	try {
-		const CF_TXT = await env.KV.get('cf.json');
+		const CF_TXT = await D1Get(env, 'cf.json');
 		if (!CF_TXT) {
-			await env.KV.put('cf.json', JSON.stringify(初始化CF_JSON, null, 2));
+			await D1Put(env, 'cf.json', JSON.stringify(初始化CF_JSON, null, 2));
 		} else {
 			const CF_JSON = JSON.parse(CF_TXT);
 			if (CF_JSON.UsageAPI) {
@@ -6961,7 +7002,7 @@ async function 处理Telegram机器人Webhook(botTokenFromPath, request, env, ur
 	try { update = await request.json(); } catch (e) { return new Response('ok'); }
 
 	let tg;
-	try { tg = JSON.parse(await env.KV.get('tg.json') || '{}'); } catch (e) { tg = {}; }
+	try { tg = JSON.parse(await D1Get(env, 'tg.json') || '{}'); } catch (e) { tg = {}; }
 	if (!tg?.BotToken || tg.BotToken !== botTokenFromPath || !tg.ChatID || !tg.启用) return new Response('ok');
 
 	const botToken = tg.BotToken;
@@ -6972,7 +7013,7 @@ async function 处理Telegram机器人Webhook(botTokenFromPath, request, env, ur
 	const fromId = String(message?.from?.id || cq?.from?.id || '');
 	if (!chatId || chatId !== adminChatId) return new Response('ok'); // فقط ادمین مجاز است
 
-	let lang = (await env.KV.get('tg_lang')) || 'fa';
+	let lang = (await D1Get(env, 'tg_lang')) || 'fa';
 	const panelURL = `${url.protocol}//${url.host}/admin`;
 	const msgId = cq?.message?.message_id;
 
@@ -6994,7 +7035,7 @@ async function 处理Telegram机器人Webhook(botTokenFromPath, request, env, ur
 
 		if (data === 'tg_lang_fa' || data === 'tg_lang_en') {
 			lang = data === 'tg_lang_fa' ? 'fa' : 'en';
-			await env.KV.put('tg_lang', lang);
+			await D1Put(env, 'tg_lang', lang);
 			await sendMenu(msgId);
 		} else if (data === 'tg_get_sub') {
 			const token = await MD5MD5(host + userID);
@@ -7847,7 +7888,7 @@ function matrixEdgeAdminDashboard() {
           <input type="text" id="f_update_account" placeholder="auto-detect">
         </div>
         <div class="field" style="flex:1">
-          <label><span data-fa>KV Namespace ID (اختیاری)</span><span data-en>KV Namespace ID (optional)</span></label>
+          <label><span data-fa>D1 Database ID (اختیاری)</span><span data-en>D1 Database ID (optional)</span></label>
           <input type="text" id="f_update_kvid" placeholder="auto if deployed via Wizard">
         </div>
       </div>
@@ -8007,7 +8048,7 @@ function matrixEdgeAdminDashboard() {
 
   fetch('/admin/update-settings.json', { credentials: 'same-origin' }).then(r => r.json()).then(s => {
     if (s.accountId) document.getElementById('f_update_account').value = s.accountId;
-    if (s.kvId) document.getElementById('f_update_kvid').value = s.kvId;
+    if (s.d1Id) document.getElementById('f_update_kvid').value = s.d1Id;
     if (s.workerName) document.getElementById('f_update_workername').value = s.workerName;
     if (s.hasToken) document.getElementById('f_update_token').placeholder = faOn() ? 'قبلاً ذخیره شده (برای تغییر بازنویسی کن)' : 'Already saved (overwrite to change)';
   }).catch(() => {});
@@ -8015,11 +8056,11 @@ function matrixEdgeAdminDashboard() {
   document.getElementById('saveUpdateSettingsBtn').onclick = async () => {
     const cfToken = document.getElementById('f_update_token').value.trim();
     const accountId = document.getElementById('f_update_account').value.trim();
-    const kvId = document.getElementById('f_update_kvid').value.trim();
+    const d1Id = document.getElementById('f_update_kvid').value.trim();
     const workerName = document.getElementById('f_update_workername').value.trim();
     updateStatusEl.textContent = faOn() ? 'در حال ذخیره...' : 'Saving...';
     try {
-      const body = { accountId, kvId, workerName };
+      const body = { accountId, d1Id, workerName };
       if (cfToken) body.cfToken = cfToken;
       const res = await fetch('/admin/update-settings.json', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify(body) });
       const data = await res.json();
@@ -8249,8 +8290,8 @@ function matrixEdgeAdminDashboard() {
   const splashMinTime = new Promise(res => setTimeout(res, 1000));
   const splashStatusEl = document.getElementById('splashStatus');
   const splashSteps = faOn()
-    ? ['بررسی KV و متغیرها…', 'خواندن تنظیمات پنل…', 'بررسی اتصال Cloudflare…', 'آماده‌سازی داشبورد…']
-    : ['Checking KV storage & variables…', 'Reading panel configuration…', 'Verifying Cloudflare connection…', 'Preparing dashboard…'];
+    ? ['بررسی D1 و متغیرها…', 'خواندن تنظیمات پنل…', 'بررسی اتصال Cloudflare…', 'آماده‌سازی داشبورد…']
+    : ['Checking D1 storage & variables…', 'Reading panel configuration…', 'Verifying Cloudflare connection…', 'Preparing dashboard…'];
   let splashStepIdx = 0;
   if (splashStatusEl) splashStatusEl.textContent = splashSteps[0];
   const splashStepTimer = setInterval(() => {
