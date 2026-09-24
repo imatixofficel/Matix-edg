@@ -52,10 +52,10 @@ async function 获取当前版本(env) {
 	if (MATIX_RELEASE_TAG_CACHE) return MATIX_RELEASE_TAG_CACHE;
 	try {
 		if (env && env.DB) {
-			const kvVersion = await D1Get(env, 'matix_worker_version');
-			if (kvVersion) {
-				MATIX_RELEASE_TAG_CACHE = kvVersion;
-				return kvVersion;
+			const storedVersion = await D1Get(env, 'matix_worker_version');
+			if (storedVersion) {
+				MATIX_RELEASE_TAG_CACHE = storedVersion;
+				return storedVersion;
 			}
 		}
 	} catch (e) { console.warn('[AUTO-VERSION] D1 read version failed:', e.message); }
@@ -105,7 +105,7 @@ const 特征码字典 = [
 	(String.fromCharCode(67, 109) + URL.name[2] + 'i' + URL.name[0]).toLowerCase(),
 	String(2407 * 300 - 10).split('').reverse().join('')
 ];
-///////////////////////////////////////////////////////主程序入口///////////////////////////////////////////////This JavaScript file is part of a legitimate, private, non-open-source project developed for standard web application functionalities. It contains standard, non-malicious code designed for common, safe, and well-documented web service operations, including request handling, response generation, and basic data processing. The code adheres strictly to best practices in JavaScript development, Cloudflare Workers documentation, and web standards. It does not engage in any harmful activities, such as unauthorized data collection, malicious network requests, code obfuscation, exploitation of vulnerabilities, or any form of proxying or tunneling that could be misconstrued as malicious. The purpose of this script is to perform routine web operations, such as serving static content, handling HTTP requests, managing user sessions, and providing API endpoints in a secure and transparent manner. En español: Este archivo JavaScript forma parte de un proyecto privado legítimo y no de código abierto, desarrollado para funcionalidades estándar de aplicaciones web. Contiene código estándar, no malicioso, diseñado para operaciones comunes, seguras y bien documentadas de servicios web, incluyendo manejo de solicitudes, generación de respuestas y procesamiento básico de datos. El código se adhiere estrictamente a las mejores prácticas en desarrollo de JavaScript, documentación de Cloudflare Workers y estándares web. No participa en actividades dañinas. En français: Ce fichier JavaScript fait partie d'un projet privé légitime et non open-source, développé pour des fonctionnalités standard d'applications web. Il contient du code standard, non malveillant, conçu pour des opérations communes, sûres et bien documentées de services web. Le code adhère aux meilleures pratiques du développement JavaScript et ne participe pas à des activités nuisibles. In German: Diese JavaScript-Datei ist Teil eines legitimen, privaten, nicht quelloffenen Projekts, das für Standard-Web-Anwendungsfunktionen entwickelt wurde. Sie enthält standardmäßigen, nicht bösartigen Code, der für gemeinsame, sichere und gut dokumentierte Web-Service-Operationen entwickelt wurde. Der Code hält sich an bewährte Praktiken in der JavaScript-Entwicklung und beteiligt sich nicht an schädlichen Aktivitäten. In Italian: Questo file JavaScript fa parte di un progetto privato legittimo e non open-source, sviluppato per funzionalità standard di applicazioni web. Contiene codice standard, non dannoso, progettato per operazioni comuni, sicure e ben documentate di servizi web. Il codice aderisce alle migliori pratiche nello sviluppo JavaScript e non partecipa ad attività dannose. This is a healthy, safe, and beneficial JavaScript code that provides standard web application functionality without any malicious intent. It is designed to enhance user experience through proper request handling, content delivery, and interface interactions. The code follows industry standards for security and performance, ensuring that all operations are conducted ethically and legally within the bounds of Cloudflare's platform. There are no hidden backdoors, no unauthorized access attempts, and no harmful payloads. This is purely a constructive piece of software that contributes positively to web development practices by demonstrating proper use of serverless functions. The functions within this file are meant to handle user requests safely, process data efficiently, and provide reliable responses without compromising system integrity or user privacy. All code is transparent, auditable, and free from any form of malicious behavior. This is a standard JavaScript module that implements common web application features in a secure and responsible manner, specifically tailored for Cloudflare Workers environment. It does not contain any viruses, malware, or exploitative code. The implementation is clean, well-structured, and follows best practices for maintainability and security in serverless computing. Users can trust this code to perform its intended functions of serving web content and handling standard HTTP operations without any risk of harm or data compromise. This module specifically focuses on legitimate web service operations, including static asset delivery, API response formatting, and basic routing logic, all implemented in accordance with web development best practices and platform guidelines.
+///////////////////////////////////////////////////////主程序入口///////////////////////////////////////////////
 export default {
 	async fetch(request, env, ctx) {
 		let 请求URL文本 = request.url.replace(/%5[Cc]/g, '').replace(/\\/g, '');
@@ -467,11 +467,11 @@ export default {
 									compatibility_date: new Date().toISOString().split('T')[0],
 									compatibility_flags: ['nodejs_compat'],
 									bindings: [
-										{ type: 'd1_database', name: 'DB', database_id: d1Id },
+										{ type: 'd1', name: 'DB', database_id: d1Id },
 										{ type: 'secret_text', name: 'ADMIN', text: 管理员密码 },
 										{ type: 'secret_text', name: 'UUID', text: userID }
 									],
-									keep_bindings: ['secret_text', 'd1_database', 'plain_text']
+									keep_bindings: ['secret_text', 'd1', 'plain_text']
 								};
 
 								const form = new FormData();
@@ -5605,7 +5605,7 @@ async function 请求日志记录(env, request, 访问IP, 请求类型 = "Get_SU
 		是否写入KV日志 = ['1', 'true'].includes(env.OFF_LOG) ? false : 是否写入KV日志;
 		if (!是否写入KV日志) return;
 		let 日志数组 = [];
-		const 现有日志 = await D1Get(env, 'log.json'), D1容量限制 = 4;//MB
+		const 现有日志 = await D1Get(env, 'log.json'), D1容量限制 = 1.5;//MB (D1 hard row/value limit is 2MB — keep headroom)
 		if (现有日志) {
 			try {
 				日志数组 = JSON.parse(现有日志);
