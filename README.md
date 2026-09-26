@@ -1,10 +1,11 @@
 # Matix Edge — Cloudflare Workers Panel
 
-**In the name of God**
+**In the name of Allah**
 
 A lightweight, fast, and easy-to-deploy panel for Cloudflare Workers.
 
 🌐 **Wizard:** [https://matix-wizard.imatixofficel.workers.dev/](https://matix-wizard.imatixofficel.workers.dev/)
+🌐 **BOT TELEGRAM** [[https://t.me/IMatixedgebot](https://t.me/IMatixedgebot)](https://t.me/IMatixedgebot)
 
 ---
 
