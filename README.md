@@ -5,7 +5,8 @@
 A lightweight, fast, and easy-to-deploy panel for Cloudflare Workers.
 
 🌐 **Wizard:** [https://matix-wizard.imatixofficel.workers.dev/](https://matix-wizard.imatixofficel.workers.dev/)
-🌐 **BOT TELEGRAM** [[https://t.me/IMatixedgebot](https://t.me/IMatixedgebot)](https://t.me/IMatixedgebot)
+
+🌐 **BOT TELEGRAM** [[https://t.me/IMatixedgebot](https://t.me/IMatixedgebot)]
 
 ---
 
