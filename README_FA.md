@@ -7,6 +7,8 @@ markdown
 
 🌐 **راه‌اندازی خودکار:** [https://matix-wizard.imatixofficel.workers.dev/](https://matix-wizard.imatixofficel.workers.dev/)
 
+🌐 **نصب با ربات تلگرام ** [[https://t.me/IMatixedgebot](https://t.me/IMatixedgebot)]
+
 ---
 
 ## این چیه؟
