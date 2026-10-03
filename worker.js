@@ -1,5 +1,231 @@
 const Version = '2026-08-11 14:45:22';
 // [AUTO-VERSION] Fallback only; the active worker version is stored in D1.
+const MATIX_LOGO = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAKAAAACgCAMAAAC8EZcfAAABgFBMVEVjM61dGt2XZOOIbrSgF/Hr2eC4od83AOhGKHt9ZKu2trbMT/02D5t1TM2Zg7qqqv+q///HPv//f///qv/Ard78+/0AAAD26PxtAurv2Pzlt/zpx/wqAmwiAVjjqfz+/v7Zl/zViPzbpfsyAYzml/3NeP2HBvOOFvYcAFOuR/u0Vvv9/f2UJvc2AKtJArH8/PxPA8zGaPz9/P38/Py0Z/r9/P39/P2pN/rZxvHSt/Ljiv2UNvawdvMdAGVMJo5oAtKRRfV0F+ynKvlUBOhWJqpvJ+qWWPE2AMyXd8ysl9C5letDBZNPFrJrKNGlic95Nu3GWf1WF9BWNZJzONFtSKyRZ9CviOh4Vq+4pdaHV841FXJHF5PFttxlR5nc0e17R8sAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADHiFBwAAAAYHRSTlP//////wn/////A/////8DA/8CA//+AP7/////////BP//////////////L////9L//46z/1V0///////////////////////////////////////////////////////b2mpiAAAYZElEQVR42tWdCVfjxrKABTOZTF5yc9/mEZaF0OoN29hg8ILZ923YBmbNzP//F6+6qrvVklqyYUjOec45yQlg9Lm2rqruLox3z34tLS3x/y6vb6yura2slPhrZWVtbXVjfVn+wNLzn2I8G24J/7O+oYClXwC6sY4/+N9L/7P0DwKSRJbXV3PREpir68vxu/5+QJTd0vLGWhLDzL6U765tLC89T9fGc4S3vLGiQysrryzlysbyc8RoPBlvaX0tDUdMFXhZ7FXBlwoq5Li+9GRE44l4y7HdSTYEc/Bl8Zf4H+KMIVdWl5+IaDwRL00n2DiV6+HLdfEr9A2EjOX4RETjKXhrCh7BEQJw9RqDVq1aXeCvaq3WGjQjD77rOL6DkJJx7SmIMwKqeCQ7oPPZ48OoOahJsPSr1mr0PPYpfMEYI74g4H/Ar1tNCs9icnG85n4uW/xqNSMHf15BXF3CX/sigKCNpQ0Vr1JB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';
+const MX_CSS_COMMON = `
+/* ============ MatiX · monochrome glass theme ============ */
+html body.mx{
+  --mx-ink:#161616; --mx-muted:#77777d; --mx-surface:rgba(255,255,255,.80); --mx-card-line:rgba(255,255,255,.75);
+  --mx-line:rgba(0,0,0,.08); --mx-field:#f0f0f2; --mx-fieldline:rgba(0,0,0,.06); --mx-focus:rgba(0,0,0,.10);
+  --mx-btn-bg:#232323; --mx-btn-fg:#fff; --mx-bar:#232323; --mx-track:rgba(0,0,0,.09);
+  --mx-side:#fff; --mx-act-bg:#232323; --mx-act-fg:#fff; --mx-black:#232323; --mx-chip-bg:#fff;
+  --mx-toast-bg:#232323; --mx-toast-fg:#fff;
+  --mx-shadow:0 22px 48px -26px rgba(0,0,0,.34);
+  --mx-page:radial-gradient(900px 560px at 14% 6%, #f7f7f8 0, transparent 62%), radial-gradient(900px 620px at 92% 94%, #bdbdc2 0, transparent 60%), #d9d9dc;
+  --text:var(--mx-ink); --muted:var(--mx-muted); --bg-0:#d9d9dc; --card:#fff;
+  --purple:#232323; --purple-2:#232323; --purple-deep:#000; --pink:#232323;
+  font-family:'Vazirmatn','Inter',system-ui,sans-serif; color:var(--mx-ink); background:var(--mx-page); background-attachment:fixed;
+}
+html[data-lang="en"] body.mx{font-family:'Inter','Vazirmatn',system-ui,sans-serif;}
+html:not([data-theme="light"]) body.mx{
+  --mx-ink:#f2f2f3; --mx-muted:#9b9ba1; --mx-surface:rgba(32,32,36,.74); --mx-card-line:rgba(255,255,255,.08);
+  --mx-line:rgba(255,255,255,.10); --mx-field:rgba(255,255,255,.07); --mx-fieldline:rgba(255,255,255,.10); --mx-focus:rgba(255,255,255,.14);
+  --mx-btn-bg:#f2f2f3; --mx-btn-fg:#111; --mx-bar:#f2f2f3; --mx-track:rgba(255,255,255,.14);
+  --mx-side:#1a1a1d; --mx-act-bg:#f2f2f3; --mx-act-fg:#111; --mx-black:#060607; --mx-chip-bg:rgba(255,255,255,.08);
+  --mx-toast-bg:#f2f2f3; --mx-toast-fg:#111;
+  --mx-shadow:0 22px 48px -26px rgba(0,0,0,.8);
+  --mx-page:radial-gradient(900px 560px at 14% 6%, #2a2a2e 0, transparent 62%), radial-gradient(900px 620px at 92% 94%, #232326 0, transparent 60%), #0c0c0e;
+  --bg-0:#0c0c0e;
+}
+
+/* background: soft grey swirl, no colour */
+html body.mx .bg{background:transparent;}
+html body.mx .bg::after,html body.mx .grid,html body.mx .particles,html body.mx .net-globe,html body.mx .panel-frame{display:none !important;}
+html body.mx .orb{filter:blur(90px);opacity:.75;}
+html body.mx .orb1{background:#ffffff;}
+html body.mx .orb2{background:#a4a4aa;opacity:.55;}
+html body.mx .orb3,html body.mx .orb4{display:none;}
+html:not([data-theme="light"]) body.mx .orb1{background:#3a3a40;opacity:.55;}
+html:not([data-theme="light"]) body.mx .orb2{background:#2a2a2f;opacity:.7;}
+
+/* logo: always the circular M icon */
+html body.mx .logo{background-image:url(${MATIX_LOGO});background-size:cover;background-position:center;background-repeat:no-repeat;
+  background-color:#fff;border-radius:50%;border:0;animation:none;box-shadow:0 8px 20px -8px rgba(90,40,200,.55);}
+
+/* typography */
+html body.mx .title,html body.mx .brand-name{background:none;-webkit-text-fill-color:currentColor;color:var(--mx-ink);}
+html body.mx label,html body.mx .muted,html body.mx .subtitle,html body.mx p{color:var(--mx-muted);}
+html body.mx h1,html body.mx h2{color:var(--mx-ink);}
+
+/* fields */
+html body.mx input:not([type=checkbox]):not([type=radio]),html body.mx select,html body.mx textarea{
+  background:var(--mx-field);border:1px solid var(--mx-fieldline);color:var(--mx-ink);border-radius:14px;}
+html body.mx input:focus,html body.mx select:focus,html body.mx textarea:focus{border-color:var(--mx-ink);box-shadow:0 0 0 4px var(--mx-focus);}
+html body.mx code{background:var(--mx-field);border:0;color:var(--mx-ink);}
+
+/* buttons */
+html body.mx button.submit,html body.mx button.primary,html body.mx .copy{
+  background:var(--mx-btn-bg);color:var(--mx-btn-fg);border:0;border-radius:999px;box-shadow:none;font-weight:700;}
+html body.mx button.submit:hover,html body.mx button.primary:hover,html body.mx .copy:hover{background:var(--mx-btn-bg);filter:none;opacity:.88;}
+html body.mx button.ghost,html body.mx button.chip,html body.mx .langtoggle{
+  background:var(--mx-chip-bg);border:1px solid var(--mx-line);color:var(--mx-ink);border-radius:999px;backdrop-filter:blur(10px);}
+html body.mx button.chip:hover,html body.mx .langtoggle:hover{border-color:var(--mx-ink);}
+html body.mx button.chip.danger{color:var(--mx-ink);}
+html body.mx .error{background:var(--mx-chip-bg);border:1px solid var(--mx-line);color:#c0352b;border-radius:14px;}
+html body.mx .foot{color:var(--mx-muted);}
+
+/* glass card (login + setup) */
+html body.mx .wrap > .card{background:var(--mx-surface);border:1px solid var(--mx-card-line);border-radius:32px;
+  box-shadow:var(--mx-shadow);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);color:var(--mx-ink);}
+html body.mx .wrap .brand{flex-direction:column;gap:12px;margin-bottom:10px;}
+html body.mx .wrap .logo{width:72px;height:72px;}
+html body.mx .wrap .title{font-size:22px;}
+
+@font-face{font-family:'Vazirmatn';font-weight:400;font-display:swap;src:url(https://cdn.jsdelivr.net/npm/@fontsource/vazirmatn/files/vazirmatn-arabic-400-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC;}
+@font-face{font-family:'Vazirmatn';font-weight:500;font-display:swap;src:url(https://cdn.jsdelivr.net/npm/@fontsource/vazirmatn/files/vazirmatn-arabic-500-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC;}
+@font-face{font-family:'Vazirmatn';font-weight:600;font-display:swap;src:url(https://cdn.jsdelivr.net/npm/@fontsource/vazirmatn/files/vazirmatn-arabic-600-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC;}
+@font-face{font-family:'Vazirmatn';font-weight:700;font-display:swap;src:url(https://cdn.jsdelivr.net/npm/@fontsource/vazirmatn/files/vazirmatn-arabic-700-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC;}
+@font-face{font-family:'Vazirmatn';font-weight:800;font-display:swap;src:url(https://cdn.jsdelivr.net/npm/@fontsource/vazirmatn/files/vazirmatn-arabic-800-normal.woff2) format('woff2');unicode-range:U+0600-06FF,U+0750-077F,U+0870-088E,U+0890-0891,U+0898-08E1,U+08E3-08FF,U+200C-200E,U+2010-2011,U+204F,U+2E41,U+FB50-FDFF,U+FE70-FE74,U+FE76-FEFC;}
+html body.mx, html[data-lang="en"] body.mx{font-family:'Vazirmatn','Vazir',Tahoma,'Segoe UI','Inter',system-ui,-apple-system,sans-serif;}
+html[data-lang="en"] body.mx{font-family:'Inter','Vazirmatn',Tahoma,system-ui,-apple-system,sans-serif;}
+html body.mx button,html body.mx input,html body.mx select,html body.mx textarea,html body.mx a,html body.mx label,html body.mx .chip,html body.mx .splash-status{font-family:inherit;}
+html body.mx button{font-weight:600;letter-spacing:0;line-height:1.4;}
+html body.mx input[type=password]{letter-spacing:.12em;}
+html body.mx .linkbox input,html body.mx textarea,html body.mx .log-meta,html body.mx .log-time{font-family:ui-monospace,'SF Mono',Menlo,Consolas,'DejaVu Sans Mono',monospace;}
+`;
+const MX_CSS_DASH = `
+/* ---------------- dashboard layout ---------------- */
+html{scroll-behavior:smooth;}
+html body.mx .card{scroll-margin-top:96px;}
+html body.mx header{background:transparent;border:0;backdrop-filter:none;-webkit-backdrop-filter:none;padding:18px 22px;z-index:6;}
+html body.mx .greet-h{font-size:24px;font-weight:800;color:var(--mx-ink);line-height:1.3;}
+html body.mx .greet-s{font-size:12.5px;color:var(--mx-muted);margin-top:2px;}
+html body.mx .brand .logo{width:38px;height:38px;}
+html body.mx .brand-name{font-size:17px;}
+html body.mx .actions{gap:8px;}
+html body.mx button.chip{padding:9px 16px;font-size:12.5px;font-weight:600;}
+html body.mx .theme-toggle{width:40px;height:40px;padding:0;border-radius:50%;}
+html body.mx .theme-toggle svg{width:18px;height:18px;min-width:18px;flex:0 0 auto;color:var(--mx-ink);animation:none;}
+html body.mx .theme-toggle .icon-sun{animation:none;}
+html body.mx .brand-name{white-space:nowrap;}
+html body.mx input[type=number]{text-align:center;}
+html body.mx .hamb{background:var(--mx-chip-bg);border:1px solid var(--mx-line);color:var(--mx-ink);border-radius:14px;}
+
+/* sidebar */
+html body.mx .side{background:var(--mx-side);border:0;border-radius:30px;box-shadow:0 26px 60px -26px rgba(0,0,0,.45);
+  padding:22px 14px;overflow-y:auto;backdrop-filter:none;-webkit-backdrop-filter:none;transition:transform .28s ease;}
+html body.mx .side-brand{display:flex;align-items:center;gap:10px;padding:2px 10px 16px;font-weight:800;font-size:18px;color:var(--mx-ink);}
+html body.mx .side-brand .logo{width:40px;height:40px;flex:0 0 auto;}
+html body.mx .side-brand small{font-weight:600;opacity:.55;font-size:12px;}
+html body.mx .side-sec{font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--mx-muted);padding:16px 12px 6px;font-weight:700;}
+html body.mx .side a{background:transparent;border:0;border-radius:14px;padding:10px 12px;margin:2px 0;font-size:13.5px;font-weight:600;color:var(--mx-ink);transition:background .2s,color .2s;}
+html body.mx .side a:hover{background:var(--mx-field);border:0;}
+html body.mx .side a.active{background:var(--mx-act-bg);color:var(--mx-act-fg);}
+html body.mx .side .icon{width:26px;height:26px;border:0;background:transparent;animation:none;filter:grayscale(1);font-size:15px;border-radius:8px;}
+html body.mx .side a.active .icon{filter:grayscale(1) brightness(1.7);}
+html:not([data-theme="light"]) body.mx .side a.active .icon{filter:grayscale(1) brightness(.2);}
+html body.mx .backdrop{background:rgba(10,10,12,.28);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);}
+
+/* cards */
+html body.mx .card{background:var(--mx-surface);border:1px solid var(--mx-card-line);border-radius:28px;padding:22px;color:var(--mx-ink);
+  box-shadow:var(--mx-shadow);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);transform:none !important;transition:border-color .25s;}
+html body.mx .card:hover{border-color:var(--mx-line);}
+html body.mx .card::before{display:none;}
+html body.mx .card h2{color:var(--mx-ink);font-size:15px;font-weight:700;margin-bottom:16px;}
+html body.mx .card h2 .dot{background:currentColor;box-shadow:none;width:8px;height:8px;}
+html body.mx .card h2 .icon,html body.mx .icon{background:var(--mx-field);border:0;border-radius:12px;animation:none;filter:grayscale(1);}
+html body.mx #overview,html body.mx #usage{
+  --mx-ink:#fff; --mx-muted:rgba(255,255,255,.62); --mx-field:rgba(255,255,255,.09); --mx-fieldline:rgba(255,255,255,.14); --mx-focus:rgba(255,255,255,.18);
+  --mx-btn-bg:#fff; --mx-btn-fg:#111; --mx-bar:#fff; --mx-track:rgba(255,255,255,.16); --mx-line:rgba(255,255,255,.14); --text:#fff; --muted:rgba(255,255,255,.62);
+  background:var(--mx-black);border-color:rgba(255,255,255,.06);color:#fff;}
+html body.mx #overview h2,html body.mx #usage h2{color:#fff;}
+
+/* grid */
+html body.mx main{perspective:none;gap:18px;}
+html body.mx .usage-stat{background:var(--mx-field);border:0;border-radius:22px;}
+html body.mx .status-item{background:var(--mx-field);border:0;border-radius:18px;}
+html body.mx .status-dot-live{background:var(--mx-ink);box-shadow:none;}
+html body.mx .usage-bar{background:var(--mx-track);}
+html body.mx .usage-fill{background:var(--mx-bar);}
+html body.mx .chk input{accent-color:var(--mx-ink);}
+html body.mx .linkbox input{border-radius:999px;padding-inline:16px;}
+
+/* update progress */
+html body.mx .matix-update-progress{background:var(--mx-field);border:0;border-radius:18px;}
+html body.mx .matix-update-progress-track{background:var(--mx-track);}
+html body.mx .matix-update-progress-glow{background:linear-gradient(90deg,transparent,var(--mx-ink),transparent);box-shadow:none;}
+html body.mx [style*="93c5fd"]{color:var(--mx-ink) !important;text-decoration:underline !important;text-underline-offset:3px;}
+
+/* logs */
+html body.mx .loglist::-webkit-scrollbar-thumb{background:var(--mx-track);}
+html body.mx .log-row{background:var(--mx-field);border:0;border-left:3px solid var(--mx-ink);border-radius:16px;}
+html body.mx .log-row:hover{transform:none;box-shadow:none;border-color:var(--mx-ink);}
+html body.mx .log-icon{background:var(--mx-chip-bg);box-shadow:none;filter:grayscale(1);}
+html body.mx .log-type{color:var(--mx-ink);}
+
+/* toast + modal */
+html body.mx .toast{background:var(--mx-toast-bg);color:var(--mx-toast-fg);border:0;border-radius:999px;padding:12px 24px;}
+html body.mx .toast.err{box-shadow:0 0 0 2px #d9443a;}
+html body.mx .modal{background:rgba(14,14,16,.38);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);}
+html body.mx .modal-card,html body.mx .modal-card.glass{background:var(--mx-surface);border:1px solid var(--mx-card-line);border-radius:32px;color:var(--mx-ink);
+  box-shadow:0 30px 80px -30px rgba(0,0,0,.5);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);}
+html body.mx .social-btn{background:var(--mx-field);border:0;color:var(--mx-ink);}
+html body.mx .social-btn:hover{background:var(--mx-track);}
+
+/* ---------------- loading screen ---------------- */
+@keyframes mxSpin{to{transform:rotate(360deg)}}
+@keyframes mxBar{0%{width:0}60%{width:82%}100%{width:100%}}
+html body.mx .splash{background:radial-gradient(circle at 50% 28%, #fafafa 0, #d4d4d8 78%);}
+html:not([data-theme="light"]) body.mx .splash{background:radial-gradient(circle at 50% 28%, #2b2b30 0, #0a0a0b 78%);}
+html body.mx .splash-wrap{width:148px;height:148px;}
+html body.mx .splash-ring{border-radius:50%;}
+html body.mx .splash-ring.r1{width:148px;height:148px;border:3px solid var(--mx-track);border-top-color:var(--mx-ink);animation:mxSpin 1.1s linear infinite;}
+html body.mx .splash-ring.r2{width:120px;height:120px;border:1px dashed var(--mx-track);animation:mxSpin 14s linear infinite reverse;}
+html body.mx .splash-ring.r3{display:none;}
+html body.mx .splash-core{width:88px;height:88px;background:url(${MATIX_LOGO}) center/cover no-repeat #fff;
+  box-shadow:0 16px 36px -12px rgba(90,40,200,.55),0 0 0 6px var(--mx-chip-bg);animation:pulseCore 2.2s ease-in-out infinite;}
+html body.mx .splash-bismillah{margin-top:32px;font-size:23px;font-weight:800;color:var(--mx-ink);text-shadow:none;letter-spacing:0;}
+html body.mx .splash-brand{margin-top:8px;font-size:17px;font-weight:700;background:none;-webkit-text-fill-color:currentColor;color:var(--mx-muted);}
+html body.mx .splash-bar{margin-top:20px;width:190px;height:6px;background:var(--mx-track);}
+html body.mx .splash-bar-fill{background:var(--mx-bar);animation:mxBar 1.3s ease forwards;}
+html body.mx .splash-status{color:var(--mx-muted);opacity:1;}
+
+/* ---------------- responsive ---------------- */
+@media (min-width:901px){
+  html body.mx .hamb,html body.mx .backdrop{display:none !important;}
+  html body.mx .brand{display:none;}
+  html[dir] body.mx .side{position:fixed;inset:16px auto 16px auto;inset-inline-start:16px;width:264px;transform:none;z-index:4;}
+  html body.mx header{margin-inline-start:296px;}
+  html body.mx main{margin:0;margin-inline-start:296px;margin-inline-end:24px;max-width:none;padding:6px 0 60px;}
+}
+@media (min-width:1500px){ html body.mx main{grid-template-columns:repeat(3,minmax(0,1fr));} }
+@media (max-width:900px){
+  html body.mx .greet{display:none;}
+  html body.mx .hamb{display:inline-flex;}
+  html[dir] body.mx .side{position:fixed;inset:10px auto 10px auto;inset-inline-start:10px;width:290px;max-width:86vw;z-index:30;}
+  html[dir="rtl"] body.mx .side{transform:translateX(125%);}
+  html[dir="ltr"] body.mx .side{transform:translateX(-125%);}
+  html[dir] body.mx .side.open{transform:none;}
+  html body.mx .backdrop{z-index:29;}
+  html body.mx header{padding:12px 14px;background:transparent;}
+  html body.mx main{padding:6px 14px 60px;}
+}
+@media (max-width:480px){
+  html body.mx .brand-name span{display:none;}
+  html body.mx .brand{gap:8px;}
+  html body.mx .actions{gap:6px;}
+  html body.mx button.chip{padding:8px 12px;font-size:12px;}
+  html body.mx .theme-toggle{width:36px;height:36px;}
+}
+
+html body.mx header{justify-content:flex-start;}
+html body.mx main{align-items:stretch;}
+html body.mx main > .card{display:flex;flex-direction:column;margin-bottom:0;min-width:0;}
+html body.mx #overview{order:1} html body.mx #basic-settings{order:2} html body.mx #proxy-settings{order:3}
+html body.mx #subscription{order:4} html body.mx #panel-status{order:5} html body.mx #usage{order:6}
+html body.mx #ip-list{order:7} html body.mx #tg-bot{order:8} html body.mx #panel-update{order:9} html body.mx #logs{order:10}
+html body.mx main > .muted[style*="text-align:center"]{order:12;grid-column:1 / -1;margin:0 !important;}
+html body.mx .save-bar{order:13;grid-column:1 / -1;}
+html body.mx .iplist-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(0,1fr);gap:18px;align-items:stretch;}
+html body.mx .iplist-grid textarea{min-height:240px;height:100%;border-radius:20px;padding:14px 16px;line-height:1.8;}
+html body.mx .iplist-side{display:flex;flex-direction:column;gap:12px;background:var(--mx-field);border-radius:22px;padding:16px;}
+html body.mx .iplist-side .field{margin-bottom:0;}
+html body.mx .iplist-side button{width:100%;padding:12px 18px;}
+html body.mx .iplist-count{font-size:12.5px;color:var(--mx-muted);text-align:center;margin-top:auto;}
+html body.mx .hint-line{font-size:12px;color:var(--mx-muted);line-height:1.8;}
+@media (max-width:760px){ html body.mx .iplist-grid{grid-template-columns:1fr;} html body.mx .iplist-grid textarea{min-height:200px;} }
+html body.mx .usage-grid{grid-template-columns:1fr 1fr;}
+@media (max-width:560px){ html body.mx .usage-grid{grid-template-columns:1fr;} }
+`;
 const MATIX_RELEASE_TAG = 'v1.0.0';
 const MATIX_RELEASE_REPO = 'imatixofficel/Matix-edg';
 
@@ -16,15 +242,9 @@ async function 初始化D1(env) {
 		throw new Error('D1 binding DB is missing. Bind a Cloudflare D1 database as DB.');
 	}
 	if (!D1_INIT_PROMISE) {
-		D1_INIT_PROMISE = (async () => {
-			await env.DB.prepare(`CREATE TABLE IF NOT EXISTS "${D1_TABLE}" ("key" TEXT PRIMARY KEY NOT NULL, "value" TEXT NOT NULL)`).run();
-			await env.DB.prepare(`CREATE TABLE IF NOT EXISTS matix_logs (id INTEGER PRIMARY KEY AUTOINCREMENT, time INTEGER NOT NULL, type TEXT NOT NULL, ip TEXT, asn TEXT, cc TEXT, url TEXT, ua TEXT)`).run();
-			await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_matix_logs_time ON matix_logs(time DESC)`).run();
-			await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_matix_logs_ip_type ON matix_logs(ip, type)`).run();
-			await env.DB.prepare(`CREATE TABLE IF NOT EXISTS matix_auth_sessions (token_hash TEXT PRIMARY KEY NOT NULL, expires_at INTEGER NOT NULL, ua_hash TEXT, created_at INTEGER NOT NULL)`).run();
-			await env.DB.prepare(`CREATE INDEX IF NOT EXISTS idx_matix_auth_sessions_expiry ON matix_auth_sessions(expires_at)`).run();
-			await env.DB.prepare(`CREATE TABLE IF NOT EXISTS matix_rate_limits (bucket TEXT PRIMARY KEY NOT NULL, window_start INTEGER NOT NULL, attempts INTEGER NOT NULL, blocked_until INTEGER NOT NULL DEFAULT 0)`).run();
-		})().catch(error => {
+		D1_INIT_PROMISE = env.DB.prepare(
+			`CREATE TABLE IF NOT EXISTS "${D1_TABLE}" ("key" TEXT PRIMARY KEY NOT NULL, "value" TEXT NOT NULL)`
+		).run().catch(error => {
 			D1_INIT_PROMISE = null;
 			throw error;
 		});
@@ -50,119 +270,6 @@ async function D1Put(env, key, value) {
 async function D1Delete(env, key) {
 	await 初始化D1(env);
 	await env.DB.prepare(`DELETE FROM "${D1_TABLE}" WHERE "key" = ?1`).bind(String(key)).run();
-}
-
-
-function 提取AuthCookie(request) {
-	const cookie = request?.headers?.get('Cookie') || '';
-	return cookie.split(';').map(v => v.trim()).find(v => v.startsWith('auth='))?.slice(5) || null;
-}
-
-function 生成随机Token(字节数 = 32) {
-	const bytes = crypto.getRandomValues(new Uint8Array(字节数));
-	let binary = '';
-	for (const b of bytes) binary += String.fromCharCode(b);
-	return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
-}
-
-async function sha256Hex(input) {
-	const data = typeof input === 'string' ? new TextEncoder().encode(input) : input;
-	const hash = await crypto.subtle.digest('SHA-256', data);
-	return Array.from(new Uint8Array(hash), b => b.toString(16).padStart(2, '0')).join('');
-}
-
-function timingSafeEqualText(a, b) {
-	const aa = new TextEncoder().encode(String(a ?? ''));
-	const bb = new TextEncoder().encode(String(b ?? ''));
-	let diff = aa.length ^ bb.length;
-	const len = Math.max(aa.length, bb.length);
-	for (let i = 0; i < len; i++) diff |= (aa[i] || 0) ^ (bb[i] || 0);
-	return diff === 0;
-}
-
-async function 创建AuthSession(env, request, ttlMs = 86400000) {
-	await 初始化D1(env);
-	const token = 生成随机Token(32);
-	const tokenHash = await sha256Hex(token);
-	const uaHash = await sha256Hex(request.headers.get('User-Agent') || '');
-	await env.DB.prepare('INSERT INTO matix_auth_sessions(token_hash, expires_at, ua_hash, created_at) VALUES (?1, ?2, ?3, ?4)')
-		.bind(tokenHash, Date.now() + ttlMs, uaHash, Date.now()).run();
-	return token;
-}
-
-async function 验证AuthSession(env, request, token) {
-	if (!token) return false;
-	await 初始化D1(env);
-	const tokenHash = await sha256Hex(token);
-	const row = await env.DB.prepare('SELECT expires_at, ua_hash FROM matix_auth_sessions WHERE token_hash = ?1').bind(tokenHash).first();
-	if (!row || Number(row.expires_at) <= Date.now()) return false;
-	const uaHash = await sha256Hex(request.headers.get('User-Agent') || '');
-	return timingSafeEqualText(row.ua_hash || '', uaHash);
-}
-
-async function 删除AuthSession(env, token) {
-	if (!token) return;
-	await 初始化D1(env);
-	const tokenHash = await sha256Hex(token);
-	await env.DB.prepare('DELETE FROM matix_auth_sessions WHERE token_hash = ?1').bind(tokenHash).run();
-}
-
-async function 清理AuthSessions(env) {
-	if (!env?.DB) return;
-	await env.DB.prepare('DELETE FROM matix_auth_sessions WHERE expires_at < ?1').bind(Date.now()).run();
-}
-
-async function 检查RateLimit(env, key, maxAttempts, windowMs, blockMs = windowMs) {
-	await 初始化D1(env);
-	const bucket = await sha256Hex(key);
-	const now = Date.now();
-	const row = await env.DB.prepare('SELECT window_start, attempts, blocked_until FROM matix_rate_limits WHERE bucket = ?1').bind(bucket).first();
-	if (!row || now - Number(row.window_start) >= windowMs) {
-		await env.DB.prepare('INSERT INTO matix_rate_limits(bucket, window_start, attempts, blocked_until) VALUES (?1, ?2, 0, 0) ON CONFLICT(bucket) DO UPDATE SET window_start=excluded.window_start, attempts=0, blocked_until=0').bind(bucket, now).run();
-		return { allowed: true, remaining: maxAttempts };
-	}
-	if (Number(row.blocked_until) > now) return { allowed: false, retryAfter: Math.ceil((Number(row.blocked_until) - now) / 1000) };
-	if (Number(row.attempts) >= maxAttempts) {
-		const blockedUntil = now + blockMs;
-		await env.DB.prepare('UPDATE matix_rate_limits SET blocked_until = ?1 WHERE bucket = ?2').bind(blockedUntil, bucket).run();
-		return { allowed: false, retryAfter: Math.ceil(blockMs / 1000) };
-	}
-	return { allowed: true, remaining: maxAttempts - Number(row.attempts) };
-}
-
-async function ثبتRateLimitFailure(env, key, windowMs) {
-	await 初始化D1(env);
-	const bucket = await sha256Hex(key);
-	const now = Date.now();
-	await env.DB.prepare('INSERT INTO matix_rate_limits(bucket, window_start, attempts, blocked_until) VALUES (?1, ?2, 1, 0) ON CONFLICT(bucket) DO UPDATE SET attempts = CASE WHEN ?2 - window_start >= ?3 THEN 1 ELSE attempts + 1 END, window_start = CASE WHEN ?2 - window_start >= ?3 THEN ?2 ELSE window_start END')
-		.bind(bucket, now, windowMs).run();
-}
-
-async function 消费RateLimit(env, key, maxAttempts, windowMs, blockMs = windowMs) {
-	await 初始化D1(env);
-	const bucket = await sha256Hex(key);
-	const now = Date.now();
-	const row = await env.DB.prepare('SELECT window_start, attempts, blocked_until FROM matix_rate_limits WHERE bucket = ?1').bind(bucket).first();
-	if (!row || now - Number(row.window_start) >= windowMs) {
-		await env.DB.prepare('INSERT INTO matix_rate_limits(bucket, window_start, attempts, blocked_until) VALUES (?1, ?2, 1, 0) ON CONFLICT(bucket) DO UPDATE SET window_start=excluded.window_start, attempts=1, blocked_until=0').bind(bucket, now).run();
-		return { allowed: true, remaining: maxAttempts - 1 };
-	}
-	if (Number(row.blocked_until) > now) {
-		return { allowed: false, retryAfter: Math.ceil((Number(row.blocked_until) - now) / 1000) };
-	}
-	if (Number(row.attempts) >= maxAttempts) {
-		const blockedUntil = now + blockMs;
-		await env.DB.prepare('UPDATE matix_rate_limits SET blocked_until = ?1 WHERE bucket = ?2').bind(blockedUntil, bucket).run();
-		return { allowed: false, retryAfter: Math.ceil(blockMs / 1000) };
-	}
-	await env.DB.prepare('UPDATE matix_rate_limits SET attempts = attempts + 1 WHERE bucket = ?1').bind(bucket).run();
-	return { allowed: true, remaining: maxAttempts - Number(row.attempts) - 1 };
-}
-
-async function 读取日志D1(env, limit = 100) {
-	await 初始化D1(env);
-	const result = await env.DB.prepare('SELECT type AS TYPE, ip AS IP, asn AS ASN, cc AS CC, url AS URL, ua AS UA, time AS TIME FROM matix_logs ORDER BY id DESC LIMIT ?1').bind(limit).all();
-	return (result.results || []).reverse();
 }
 
 
@@ -213,57 +320,20 @@ const MATIX_SCANNER_ENABLED = true;
 let config_JSON, 缓存SOCKS5白名单 = null, 调试日志打印 = false;
 let SOCKS5白名单 = ['*tapecontent.net', '*cloudatacdn.com', '*loadshare.org', '*cdn-centaurus.com', 'scholar.google.com'];
 const Pages静态页面 = 'https://edt-pages.github.io';
-function md5Pure(input) {
-    function safeAdd(x, y) { const lsw = (x & 0xffff) + (y & 0xffff); const msw = (x >> 16) + (y >> 16) + (lsw >> 16); return (msw << 16) | (lsw & 0xffff); }
-    function bitRotateLeft(num, cnt) { return (num << cnt) | (num >>> (32 - cnt)); }
-    function md5cmn(q, a, b, x, s, t) { return safeAdd(bitRotateLeft(safeAdd(safeAdd(a, q), safeAdd(x, t)), s), b); }
-    function md5ff(a,b,c,d,x,s,t){return md5cmn((b&c)|(~b&d),a,b,x,s,t)} function md5gg(a,b,c,d,x,s,t){return md5cmn((b&d)|(c&~d),a,b,x,s,t)} function md5hh(a,b,c,d,x,s,t){return md5cmn(b^c^d,a,b,x,s,t)} function md5ii(a,b,c,d,x,s,t){return md5cmn(c^(b|~d),a,b,x,s,t)}
-    function binlMD5(x,len){x[len>>5]|=0x80<<(len%32);x[(((len+64)>>>9)<<4)+14]=len;let a=1732584193,b=-271733879,c=-1732584194,d=271733878;for(let i=0;i<x.length;i+=16){const olda=a,oldb=b,oldc=c,oldd=d;a=md5ff(a,b,c,d,x[i],7,-680876936);d=md5ff(d,a,b,c,x[i+1],12,-389564586);c=md5ff(c,d,a,b,x[i+2],17,606105819);b=md5ff(b,c,d,a,x[i+3],22,-1044525330);a=md5ff(a,b,c,d,x[i+4],7,-176418897);d=md5ff(d,a,b,c,x[i+5],12,1200080426);c=md5ff(c,d,a,b,x[i+6],17,-1473231341);b=md5ff(b,c,d,a,x[i+7],22,-45705983);a=md5ff(a,b,c,d,x[i+8],7,1770035416);d=md5ff(d,a,b,c,x[i+9],12,-1958414417);c=md5ff(c,d,a,b,x[i+10],17,-42063);b=md5ff(b,c,d,a,x[i+11],22,-1990404162);a=md5ff(a,b,c,d,x[i+12],7,1804603682);d=md5ff(d,a,b,c,x[i+13],12,-40341101);c=md5ff(c,d,a,b,x[i+14],17,-1502002290);b=md5ff(b,c,d,a,x[i+15],22,1236535329);a=md5gg(a,b,c,d,x[i+1],5,-165796510);d=md5gg(d,a,b,c,x[i+6],9,-1069501632);c=md5gg(c,d,a,b,x[i+11],14,643717713);b=md5gg(b,c,d,a,x[i],20,-373897302);a=md5gg(a,b,c,d,x[i+5],5,-701558691);d=md5gg(d,a,b,c,x[i+10],9,38016083);c=md5gg(c,d,a,b,x[i+15],14,-660478335);b=md5gg(b,c,d,a,x[i+4],20,-405537848);a=md5gg(a,b,c,d,x[i+9],5,568446438);d=md5gg(d,a,b,c,x[i+14],9,-1019803690);c=md5gg(c,d,a,b,x[i+3],14,-187363961);b=md5gg(b,c,d,a,x[i+8],20,1163531501);a=md5gg(a,b,c,d,x[i+13],5,-1444681467);d=md5gg(d,a,b,c,x[i+2],9,-51403784);c=md5gg(c,d,a,b,x[i+7],14,1735328473);b=md5gg(b,c,d,a,x[i+12],20,-1926607734);a=md5hh(a,b,c,d,x[i+5],4,-378558);d=md5hh(d,a,b,c,x[i+8],11,-2022574463);c=md5hh(c,d,a,b,x[i+11],16,1839030562);b=md5hh(b,c,d,a,x[i+14],23,-35309556);a=md5hh(a,b,c,d,x[i+1],4,-1530992060);d=md5hh(d,a,b,c,x[i+4],11,1272893353);c=md5hh(c,d,a,b,x[i+7],16,-155497632);b=md5hh(b,c,d,a,x[i+10],23,-1094730640);a=md5hh(a,b,c,d,x[i+13],4,681279174);d=md5hh(d,a,b,c,x[i],11,-358537222);c=md5hh(c,d,a,b,x[i+3],16,-722521979);b=md5hh(b,c,d,a,x[i+6],23,76029189);a=md5hh(a,b,c,d,x[i+9],4,-640364487);d=md5hh(d,a,b,c,x[i+12],11,-421815835);c=md5hh(c,d,a,b,x[i+15],16,530742520);b=md5hh(b,c,d,a,x[i+2],23,-995338651);a=md5ii(a,b,c,d,x[i],6,-198630844);d=md5ii(d,a,b,c,x[i+7],10,1126891415);c=md5ii(c,d,a,b,x[i+14],15,-1416354905);b=md5ii(b,c,d,a,x[i+5],21,-57434055);a=md5ii(a,b,c,d,x[i+12],6,1700485571);d=md5ii(d,a,b,c,x[i+3],10,-1894986606);c=md5ii(c,d,a,b,x[i+10],15,-1051523);b=md5ii(b,c,d,a,x[i+1],21,-2054922799);a=md5ii(a,b,c,d,x[i+8],6,1873313359);d=md5ii(d,a,b,c,x[i+15],10,-30611744);c=md5ii(c,d,a,b,x[i+6],15,-1560198380);b=md5ii(b,c,d,a,x[i+13],21,1309151649);a=md5ii(a,b,c,d,x[i+4],6,-145523070);d=md5ii(d,a,b,c,x[i+11],10,-1120210379);c=md5ii(c,d,a,b,x[i+2],15,718787259);b=md5ii(b,c,d,a,x[i+9],21,-343485551);a=safeAdd(a,olda);b=safeAdd(b,oldb);c=safeAdd(c,oldc);d=safeAdd(d,oldd)}return[a,b,c,d]}
-    function binl2rstr(input){let output='';const length32=input.length*32;for(let i=0;i<length32;i+=8)output+=String.fromCharCode((input[i>>5]>>>(i%32))&0xff);return output}
-    function rstr2binl(input){const output=[];output[(input.length>>2)-1]=undefined;for(let i=0;i<output.length;i++)output[i]=0;const length8=input.length*8;for(let i=0;i<length8;i+=8)output[i>>5]|=(input.charCodeAt(i/8)&0xff)<<(i%32);return output}
-    function rstrMD5(s){return binl2rstr(binlMD5(rstr2binl(s),s.length*8))}
-    function rstr2hex(input){const hexTab='0123456789abcdef';let output='';for(let i=0;i<input.length;i++){const x=input.charCodeAt(i);output+=hexTab.charAt((x>>>4)&0x0f)+hexTab.charAt(x&0x0f)}return output}
-    function str2rstrUTF8(input){const bytes=new TextEncoder().encode(input);let binary='';for(let i=0;i<bytes.length;i++)binary+=String.fromCharCode(bytes[i]);return binary}
-    return rstr2hex(rstrMD5(str2rstrUTF8(input)));
-}
-function md5PureBytes(input){const bytes=input instanceof Uint8Array?input:new Uint8Array(input);let binary='';const chunkSize=0x8000;for(let i=0;i<bytes.length;i+=chunkSize)binary+=String.fromCharCode(...bytes.subarray(i,i+chunkSize));const hex=md5Pure(binary);const out=new Uint8Array(16);for(let i=0;i<16;i++)out[i]=parseInt(hex.slice(i*2,i*2+2),16);return out}
-function md5PureBytesFromText(input){const hex=md5Pure(input);const out=new Uint8Array(16);for(let i=0;i<16;i++)out[i]=parseInt(hex.slice(i*2,i*2+2),16);return out}
-
-
 ///////////////////////////////////////////////////////全局常量和工具函数///////////////////////////////////////////////
 const WS早期数据最大字节 = 8 * 1024, WS早期数据最大头长度 = Math.ceil(WS早期数据最大字节 * 4 / 3) + 4;
 const 上行合包目标字节 = 20 * 1024, 上行队列最大字节 = 16 * 1024 * 1024, 上行队列最大条目 = 4096;
 const 下行Grain包字节 = 32 * 1024, 下行Grain尾部阈值 = 512, 下行Grain低水位字节 = Math.max(4096, 下行Grain尾部阈值 * 12), 下行Grain最大等待轮次 = 4;
 let TCP并发拨号数 = 2, 反代并发拨号数 = 1, 预加载竞速拨号 = false;
 ///////////////////////////////////////////////////////查杀特征码///////////////////////////////////////////////
-let 特征码字典;
-try {
-	特征码字典 = [
-		(Proxy.name + "IP").toUpperCase(),
-		(String.fromCharCode(67, 109) + URL.name[2] + 'i' + URL.name[0]).toLowerCase(),
-		String(2407 * 300 - 10).split('').reverse().join('')
-	];
-} catch (e) {
-	特征码字典 = ['PROXYIP', 'cminame', '090227'];
-}
+const 特征码字典 = [
+	(Proxy.name + "IP").toUpperCase(),
+	(String.fromCharCode(67, 109) + URL.name[2] + 'i' + URL.name[0]).toLowerCase(),
+	String(2407 * 300 - 10).split('').reverse().join('')
+];
 ///////////////////////////////////////////////////////主程序入口///////////////////////////////////////////////
 export default {
 	async fetch(request, env, ctx) {
-		try {
-			return await handleRequest(request, env, ctx);
-		} catch (err) {
-			console.error('[Fatal] fetch handler crashed:', err?.stack || err?.message || err);
-			try {
-				return new Response(await nginx(), { status: 200, headers: { 'Content-Type': 'text/html; charset=UTF-8', 'Cache-Control': 'no-store' } });
-			} catch (e) {
-				return new Response('Service temporarily unavailable', { status: 503, headers: { 'Content-Type': 'text/plain; charset=UTF-8' } });
-			}
-		}
-	}
-};
-
-async function handleRequest(request, env, ctx) {
-
 		let 请求URL文本 = request.url.replace(/%5[Cc]/g, '').replace(/\\/g, '');
 		const 请求URL锚点索引 = 请求URL文本.indexOf('#');
 		const 请求URL主体部分 = 请求URL锚点索引 === -1 ? 请求URL文本 : 请求URL文本.slice(0, 请求URL锚点索引);
@@ -288,8 +358,7 @@ async function handleRequest(request, env, ctx) {
 		反代并发拨号数 = Math.max(1, Number(env.PROXY_CONCURRENT_DIAL) || 反代并发拨号数);
 		TCP并发拨号数 = Math.max(1, Number(env.TCP_CONCURRENT_DIAL) || TCP并发拨号数);
 		if (!env.TCP_CONCURRENT_DIAL && TCP并发拨号数 !== 1 && 识别运营商(request) === 'cmcc') TCP并发拨号数 = 1;
-		const cfData = request.cf || {};
-		let 默认反代IP = (`${cfData.colo || 'UNK'}.${特征码字典[0]}.${特征码字典[1]}SsSs.nEt`).toLowerCase(), 默认反代兜底 = true;
+		let 默认反代IP = (`${request.cf.colo}.${特征码字典[0]}.${特征码字典[1]}SsSs.nEt`).toLowerCase(), 默认反代兜底 = true;
 		if (env.PROXYIP) {
 			const proxyIPs = await 整理成数组(env.PROXYIP);
 			默认反代IP = proxyIPs[Math.floor(Math.random() * proxyIPs.length)];
@@ -345,34 +414,29 @@ async function handleRequest(request, env, ctx) {
 					params.set('token', await MD5MD5(host + userID));
 					return new Response('Redirecting...', { status: 302, headers: { 'Location': `/sub?${params.toString()}` } });
 				} else if (访问路径 === 'login') {//处理登录页面和登录请求
-					const authCookie = 提取AuthCookie(request);
-					if (await 验证AuthSession(env, request, authCookie)) return new Response('Redirecting...', { status: 302, headers: { 'Location': '/admin' } });
+					const cookies = request.headers.get('Cookie') || '';
+					const authCookie = cookies.split(';').find(c => c.trim().startsWith('auth='))?.split('=')[1];
+					if (authCookie == await MD5MD5(UA + 加密秘钥 + 管理员密码)) return new Response('Redirecting...', { status: 302, headers: { 'Location': '/admin' } });
 					if (request.method === 'POST') {
-						const rateKey = `${访问IP}|${UA}`;
-						const rate = await 检查RateLimit(env, rateKey, 5, 15 * 60 * 1000, 15 * 60 * 1000);
-						if (!rate.allowed) return new Response(JSON.stringify({ success: false, error: 'Too many login attempts', retryAfter: rate.retryAfter }), { status: 429, headers: { 'Content-Type': 'application/json;charset=utf-8', 'Retry-After': String(rate.retryAfter || 900) } });
 						const formData = await request.text();
 						const params = new URLSearchParams(formData);
-						const 输入密码 = params.get('password') || '';
-						const expectedPassword = typeof 管理员密码 === 'string' ? 管理员密码.replace(/[\r\n]/g, '') : String(管理员密码 || '');
-						const passwordOK = timingSafeEqualText(await sha256Hex(输入密码), await sha256Hex(expectedPassword));
-						if (passwordOK) {
-							const token = await 创建AuthSession(env, request);
+						const 输入密码 = params.get('password');
+						if (输入密码 === (typeof 管理员密码 === 'string' ? 管理员密码.replace(/[\r\n]/g, '') : 管理员密码)) {
+							// 密码正确，设置cookie并返回成功标记
 							const 响应 = new Response(JSON.stringify({ success: true }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
-							响应.headers.set('Set-Cookie', `auth=${token}; Path=/; Max-Age=86400; HttpOnly; Secure; SameSite=Lax`);
+							响应.headers.set('Set-Cookie', `auth=${await MD5MD5(UA + 加密秘钥 + 管理员密码)}; Path=/; Max-Age=86400; HttpOnly; Secure; SameSite=Lax`);
 							return 响应;
 						}
-						await ثبتRateLimitFailure(env, rateKey, 15 * 60 * 1000);
 					}
-					return new Response(matrixEdgeLoginPage(), { status: 200, headers: { 'Content-Type': 'text/html; charset=UTF-8', 'Cache-Control': 'no-store' } });
+					return new Response(matrixEdgeLoginPage(), { status: 200, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
 				} else if (访问路径 === 'admin' || 访问路径.startsWith('admin/')) {//验证cookie后响应管理页面
-					const authCookie = 提取AuthCookie(request);
-					if (!(await 验证AuthSession(env, request, authCookie))) return new Response('Redirecting...', { status: 302, headers: { 'Location': '/login' } });
-					const adminRate = await 消费RateLimit(env, `${访问IP}|${UA}|admin`, 60, 60 * 1000, 60 * 1000);
-					if (!adminRate.allowed) return new Response('Too Many Requests', { status: 429, headers: { 'Retry-After': String(adminRate.retryAfter || 60), 'Cache-Control': 'no-store' } });
+					const cookies = request.headers.get('Cookie') || '';
+					const authCookie = cookies.split(';').find(c => c.trim().startsWith('auth='))?.split('=')[1];
+					// 没有cookie或cookie错误，跳转到/login页面
+					if (!authCookie || authCookie !== await MD5MD5(UA + 加密秘钥 + 管理员密码)) return new Response('Redirecting...', { status: 302, headers: { 'Location': '/login' } });
 					if (访问路径 === 'admin/log.json') {// 读取日志内容
-						const 读取日志内容 = JSON.stringify(await 读取日志D1(env, 200));
-						return new Response(读取日志内容, { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8', 'Cache-Control': 'no-store' } });
+						const 读取日志内容 = await D1Get(env, 'log.json') || '[]';
+						return new Response(读取日志内容, { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 					} else if (区分大小写访问路径 === 'admin/getCloudflareUsage') {// 查询请求量
 						try {
 							const Usage_JSON = await getCloudflareUsage(url.searchParams.get('Email'), url.searchParams.get('GlobalAPIKey'), url.searchParams.get('AccountID'), url.searchParams.get('APIToken'));
@@ -488,7 +552,7 @@ async function handleRequest(request, env, ctx) {
 								// 保存到 D1
 								await D1Put(env, 'config.json', JSON.stringify(newConfig, null, 2));
 								ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Save_Config', config_JSON));
-								return new Response(JSON.stringify({ success: true, message: 'Configuration saved' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8', 'Cache-Control': 'no-store' } });
+								return new Response(JSON.stringify({ success: true, message: 'Configuration saved' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 							} catch (error) {
 								console.error('Failed to save configuration:', error);
 								return new Response(JSON.stringify({ error: 'Failed to save configuration: ' + error.message }), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
@@ -571,7 +635,7 @@ async function handleRequest(request, env, ctx) {
 								const existing = JSON.parse(await D1Get(env, 'update.json') || '{}');
 								if (body.clear === true) {
 									await D1Put(env, 'update.json', JSON.stringify({}, null, 2));
-									return new Response(JSON.stringify({ success: true, message: 'Update settings cleared' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8', 'Cache-Control': 'no-store' } });
+									return new Response(JSON.stringify({ success: true, message: 'Update settings cleared' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 								}
 								const next = {
 									cfToken: body.cfToken ? body.cfToken : (existing.cfToken || null),
@@ -580,7 +644,7 @@ async function handleRequest(request, env, ctx) {
 									workerName: body.workerName !== undefined ? (body.workerName || null) : (existing.workerName || null)
 								};
 								await D1Put(env, 'update.json', JSON.stringify(next, null, 2));
-								return new Response(JSON.stringify({ success: true, message: 'Update settings saved' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8', 'Cache-Control': 'no-store' } });
+								return new Response(JSON.stringify({ success: true, message: 'Update settings saved' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 							} catch (error) {
 								return new Response(JSON.stringify({ error: 'Failed to save update settings: ' + error.message }), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 							}
@@ -619,18 +683,9 @@ async function handleRequest(request, env, ctx) {
 								const d1Id = settings.d1Id || env.D1_ID || null;
 								if (!d1Id) return new Response(JSON.stringify({ error: 'D1 database ID is unknown. Please set it manually in update settings (Cloudflare dashboard → Workers & Pages → D1).' }), { status: 400, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 
-								const expectedSha256 = String(env.UPDATE_SHA256 || '').trim().toLowerCase();
-								if (!/^[0-9a-f]{64}$/.test(expectedSha256)) return new Response(JSON.stringify({ error: 'UPDATE_SHA256 is not configured or invalid.' }), { status: 400, headers: { 'Content-Type': 'application/json;charset=utf-8', 'Cache-Control': 'no-store' } });
-								const assetUrls = [
-									'https://github.com/' + MATIX_RELEASE_REPO + '/releases/latest/download/worker.js',
-									'https://github.com/' + MATIX_RELEASE_REPO + '/releases/latest/download/_worker.js'
-								];
-								let scriptRes = null;
-								for (const assetUrl of assetUrls) { const candidate = await fetch(assetUrl, { headers: { 'User-Agent': 'Matix-Edge' } }); if (candidate.ok) { scriptRes = candidate; break; } }
-								if (!scriptRes) return new Response(JSON.stringify({ error: 'Failed to download a supported Worker release asset.' }), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8', 'Cache-Control': 'no-store' } });
+								const scriptRes = await fetch('https://github.com/' + MATIX_RELEASE_REPO + '/releases/latest/download/worker.js');
+								if (!scriptRes.ok) return new Response(JSON.stringify({ error: 'Failed to download the latest worker.js: status ' + scriptRes.status }), { status: 500, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 								const scriptText = await scriptRes.text();
-								const actualSha256 = await sha256Hex(scriptText);
-								if (!timingSafeEqualText(actualSha256, expectedSha256)) return new Response(JSON.stringify({ error: 'SHA-256 verification failed. Upload aborted.' }), { status: 409, headers: { 'Content-Type': 'application/json;charset=utf-8', 'Cache-Control': 'no-store' } });
 
 								// همون تنظیمات (D1 / ADMIN / UUID) که الان همین Worker داره رو صراحتاً دوباره اعلام می‌کنیم تا موقع آپلود اسکریپت جدید پاک نشن
 								const metadata = {
@@ -668,11 +723,19 @@ async function handleRequest(request, env, ctx) {
 							}
 						} else return new Response(JSON.stringify({ error: 'Unsupported POST request path' }), { status: 404, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 					} else if (访问路径 === 'admin/config.json') {// 处理 admin/config.json 请求，返回JSON
-						return new Response(JSON.stringify(config_JSON, null, 2), { status: 200, headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } });
+						return new Response(JSON.stringify(config_JSON, null, 2), { status: 200, headers: { 'Content-Type': 'application/json' } });
+					} else if (访问路径 === 'admin/fetch-ips') {// [MX] fetch preferred IPs from the repository source
+						try {
+							const ips = await 获取远程优选IP(config_JSON, url.searchParams.get('src'), parseInt(url.searchParams.get('n') || '50', 10));
+							return new Response(JSON.stringify({ ips }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
+						} catch (error) {
+							return new Response(JSON.stringify({ error: String(error && error.message || error) }), { status: 502, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
+						}
 					} else if (区分大小写访问路径 === 'admin/ADD.txt') {// 处理 admin/ADD.txt 请求，返回本地优选IP
+						if (url.searchParams.has('saved')) { const 已存列表 = String((await D1Get(env, 'ADD.txt')) || ''); return new Response(已存列表 === 'null' ? '' : 已存列表, { status: 200, headers: { 'Content-Type': 'text/plain;charset=utf-8' } }); }
 						let 本地优选IP = await D1Get(env, 'ADD.txt') || 'null';
 						if (本地优选IP == 'null') 本地优选IP = (await 生成随机IP(request, config_JSON.优选订阅生成.本地IP库.随机数量, config_JSON.优选订阅生成.本地IP库.指定端口))[1];
-						return new Response(本地优选IP, { status: 200, headers: { 'Content-Type': 'text/plain;charset=utf-8', 'asn': String((request.cf || {}).asn || '') } });
+						return new Response(本地优选IP, { status: 200, headers: { 'Content-Type': 'text/plain;charset=utf-8', 'asn': request.cf.asn } });
 					} else if (访问路径 === 'admin/cf.json') {// CF配置文件
 						return new Response(JSON.stringify(request.cf, null, 2), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 					} else if (访问路径 === 'admin/update-check.json') {// [AUTO-VERSION] بررسی آخرین نسخه از GitHub
@@ -705,25 +768,20 @@ async function handleRequest(request, env, ctx) {
 								hasToken: !!s.cfToken,
 								accountId: s.accountId || '',
 								d1Id: s.d1Id || env.D1_ID || '',
-								workerName: s.workerName || '',
-								updateSha256: String(env.UPDATE_SHA256 || '').toLowerCase()
-							}), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8', 'Cache-Control': 'no-store' } });
+								workerName: s.workerName || ''
+							}), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 						} catch (error) {
 							return new Response(JSON.stringify({ hasToken: false, accountId: '', d1Id: '', workerName: '' }), { status: 200, headers: { 'Content-Type': 'application/json;charset=utf-8' } });
 						}
 					}
 
 					ctx.waitUntil(请求日志记录(env, request, 访问IP, 'Admin_Login', config_JSON));
-					return new Response(matrixEdgeAdminDashboard(), { status: 200, headers: { 'Content-Type': 'text/html; charset=UTF-8', 'Cache-Control': 'no-store, no-cache, must-revalidate' } });
+					return new Response(matrixEdgeAdminDashboard(), { status: 200, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
 				} else if (访问路径 === 'logout' || uuidRegex.test(访问路径)) {//清除cookie并跳转到登录页面
-					const authCookie = 提取AuthCookie(request);
-					await 删除AuthSession(env, authCookie);
 					const 响应 = new Response('Redirecting...', { status: 302, headers: { 'Location': '/login' } });
-					响应.headers.set('Set-Cookie', 'auth=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Lax');
+					响应.headers.set('Set-Cookie', 'auth=; Path=/; Max-Age=0; HttpOnly');
 					return 响应;
 				} else if (访问路径 === 'sub') {//处理订阅请求
-					const subRate = await 消费RateLimit(env, `${访问IP}|${UA}|sub`, 60, 60 * 1000, 60 * 1000);
-					if (!subRate.allowed) return new Response('Too Many Requests', { status: 429, headers: { 'Retry-After': String(subRate.retryAfter || 60), 'Cache-Control': 'no-store' } });
 					const 订阅TOKEN = await MD5MD5(host + userID), 作为优选订阅生成器 = ['1', 'true'].includes(env.BEST_SUB) && url.searchParams.get('host') === 'example.com' && url.searchParams.get('uuid') === '00000000-0000-4000-8000-000000000000' && UA.toLowerCase().includes('tunnel (https://github.com/' + 特征码字典[1] + '/edge');
 					const 请求TOKEN = url.searchParams.get('token');
 					const 用户客户端请求订阅 = 请求TOKEN === 订阅TOKEN;
@@ -777,9 +835,9 @@ async function handleRequest(request, env, ctx) {
 							let 完整优选IP = [], 其他节点LINK = '', 反代IP池 = [];
 
 							if (!url.searchParams.has('sub') && config_JSON.优选订阅生成.local) { // 本地生成订阅
-								const 完整优选列表 = config_JSON.优选订阅生成.本地IP库.随机IP ? (
-									await 生成随机IP(request, config_JSON.优选订阅生成.本地IP库.随机数量, config_JSON.优选订阅生成.本地IP库.指定端口)
-								)[0] : await D1Get(env, 'ADD.txt') ? await 整理成数组(await D1Get(env, 'ADD.txt')) : (
+								const 手动优选文本 = String((await D1Get(env, 'ADD.txt')) || '').trim();
+								const 手动优选列表 = (手动优选文本 && 手动优选文本 !== 'null') ? (await 整理成数组(手动优选文本)).map(x => x.trim()).filter(Boolean) : [];
+								const 完整优选列表 = 手动优选列表.length > 0 ? 手动优选列表 : (
 									await 生成随机IP(request, config_JSON.优选订阅生成.本地IP库.随机数量, config_JSON.优选订阅生成.本地IP库.指定端口)
 								)[0];
 								const 优选API = [], 优选IP = [], 其他节点 = [];
@@ -918,10 +976,11 @@ async function handleRequest(request, env, ctx) {
 						return new Response(订阅内容, { status: 200, headers: responseHeaders });
 					}
 				} else if (访问路径 === 'locations') {//反代locations列表
-					const authCookie = 提取AuthCookie(request);
-					if (await 验证AuthSession(env, request, authCookie)) return fetch(new Request('https://speed.cloudflare.com/locations', { headers: { 'Referer': 'https://speed.cloudflare.com/' } }));
+					const cookies = request.headers.get('Cookie') || '';
+					const authCookie = cookies.split(';').find(c => c.trim().startsWith('auth='))?.split('=')[1];
+					if (authCookie && authCookie == await MD5MD5(UA + 加密秘钥 + 管理员密码)) return fetch(new Request('https://speed.cloudflare.com/locations', { headers: { 'Referer': 'https://speed.cloudflare.com/' } }));
 				} else if (访问路径 === 'robots.txt') return new Response('User-agent: *\nDisallow: /', { status: 200, headers: { 'Content-Type': 'text/plain; charset=UTF-8' } });
-			} else if (!env?.DB || typeof env.DB.prepare !== 'function') return new Response(matrixEdgeSetupNotice('D1'), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8', 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', 'Pragma': 'no-cache', 'Expires': '0' } });
+			} else if (!envUUID) return new Response(matrixEdgeSetupNotice('D1'), { status: 404, headers: { 'Content-Type': 'text/html; charset=UTF-8', 'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate', 'Pragma': 'no-cache', 'Expires': '0' } });
 		}
 
 		let 伪装页URL = env.URL || 'nginx';
@@ -948,8 +1007,8 @@ async function handleRequest(request, env, ctx) {
 			return 反代响应;
 		} catch (error) { }
 		return new Response(await nginx(), { status: 200, headers: { 'Content-Type': 'text/html; charset=UTF-8' } });
-
-}
+	}
+};
 ///////////////////////////////////////////////////////////////////////叉HTTP传输数据///////////////////////////////////////////////
 const HPACKHuffman码长 = [
 	13, 23, 28, 28, 28, 28, 28, 28, 28, 24, 30, 28, 28, 30, 28, 28,
@@ -2548,7 +2607,7 @@ async function SS派生主密钥(passwordText, keyLen) {
 		while (result.byteLength < keyLen) {
 			const input = new Uint8Array(prev.byteLength + pwBytes.byteLength);
 			input.set(prev, 0); input.set(pwBytes, prev.byteLength);
-			prev = md5PureBytes(input);
+			prev = new Uint8Array(await crypto.subtle.digest('MD5', input));
 			result = 拼接字节数据(result, prev);
 		}
 		return result.slice(0, keyLen);
@@ -2559,7 +2618,7 @@ async function SS派生主密钥(passwordText, keyLen) {
 }
 
 async function SS派生会话密钥(config, masterKey, salt, usages) {
-	const hmacOpts = { name: 'HMAC', hash: 'SHA-256' };
+	const hmacOpts = { name: 'HMAC', hash: 'SHA-1' };
 	const saltHmacKey = await crypto.subtle.importKey('raw', salt, hmacOpts, false, ['sign']);
 	const prk = new Uint8Array(await crypto.subtle.sign('HMAC', saltHmacKey, masterKey));
 	const prkHmacKey = await crypto.subtle.importKey('raw', prk, hmacOpts, false, ['sign']);
@@ -2929,11 +2988,15 @@ async function forwardataudp(udpChunk, webSocket, respHeader, request, 响应封
 
 function closeSocketQuietly(socket) {
 	try {
-		if (!socket || typeof socket.close !== 'function') return;
 		if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CLOSING) {
 			socket.close();
 		}
 	} catch (error) { }
+}
+
+function formatIdentifier(arr, offset = 0) {
+	const hex = [...arr.slice(offset, offset + 16)].map(b => b.toString(16).padStart(2, '0')).join('');
+	return `${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}`;
 }
 
 async function WebSocket发送并等待(webSocket, payload) {
@@ -3513,7 +3576,7 @@ async function connectStreams(remoteSocket, webSocket, headerData, retryFunc, is
 }
 
 function isSpeedTestSite(hostname) {
-	const speedTestDomains = ['speed.cloudflare.com', 'cp.cloudflare.com', 'speedtest.net', 'www.speedtest.net', 'fast.com', 'www.fast.com'];
+	const speedTestDomains = ['speed.cloudflare.com', 'cp.cloudflare.com'];
 	hostname = hostname.toLowerCase();
 	return speedTestDomains.some(domain => hostname === domain || hostname.endsWith('.' + domain));
 }
@@ -4513,7 +4576,7 @@ async function addTurnMessageIntegrity(message, key) {
 	const signedMessage = new Uint8Array(message);
 	const view = new DataView(signedMessage.buffer);
 	view.setUint16(2, view.getUint16(2) + 24);
-	const hmacKey = await crypto.subtle.importKey('raw', key, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign']);
+	const hmacKey = await crypto.subtle.importKey('raw', key, { name: 'HMAC', hash: 'SHA-1' }, false, ['sign']);
 	const signature = await crypto.subtle.sign('HMAC', hmacKey, signedMessage);
 	return 拼接字节数据(signedMessage, createTurnStunAttribute(TURN_STUN_ATTR.MESSAGE_INTEGRITY, new Uint8Array(signature)));
 }
@@ -4615,7 +4678,7 @@ async function turnConnect(proxy, targetHost, targetPort, TCP连接) {
 			if (!realmBytes || !nonce?.byteLength) throw new Error('TURN authentication challenge is missing realm or nonce');
 
 			const realm = textDecoder.decode(realmBytes);
-			integrityKey = md5PureBytesFromText(`${proxy.username}:${realm}:${proxy.password}`);
+			integrityKey = new Uint8Array(await crypto.subtle.digest('MD5', textEncoder.encode(`${proxy.username}:${realm}:${proxy.password}`)));
 			authAttributes = [
 				createTurnStunAttribute(TURN_STUN_ATTR.USERNAME, textEncoder.encode(proxy.username)),
 				createTurnStunAttribute(TURN_STUN_ATTR.REALM, textEncoder.encode(realm)),
@@ -5223,7 +5286,7 @@ function 获取传输路径参数值(配置 = {}, 节点路径 = '/', 作为优�
 }
 
 function log(...args) {
-	if (调试日志打印) { try { console.log(...args); } catch (e) {} }
+	if (调试日志打印) console.log(...args);
 }
 function Clash订阅配置文件热补丁(Clash_原始订阅内容, config_JSON = {}) {
 	const uuid = config_JSON?.UUID || null;
@@ -5730,10 +5793,7 @@ function Surge订阅配置文件热补丁(content, url, config_JSON) {
 		if (x.includes('= tro' + 'jan,') && !x.includes('ws=true') && !x.includes('ws-path=')) {
 			const host = x.split("sni=")[1].split(",")[0];
 			const 备改内容 = `sni=${host}, skip-cert-verify=${config_JSON.跳过证书验证}`;
-			const fragmentMap = { Shadowrocket: '1,40-60,30-50,tlshello', Happ: '3,1,tlshello' };
-			const fragment = fragmentMap[config_JSON.TLS分片] || '';
-			const fragmentParam = fragment ? `, tls-fragment=${fragment}` : '';
-			const 正确内容 = `sni=${host}, skip-cert-verify=${config_JSON.跳过证书验证}, ws=true, ws-path=${完整节点路径.replace(/,/g, '%2C')}, ws-headers=Host:"${host}"${fragmentParam}`;
+			const 正确内容 = `sni=${host}, skip-cert-verify=${config_JSON.跳过证书验证}, ws=true, ws-path=${完整节点路径.replace(/,/g, '%2C')}, ws-headers=Host:"${host}"`;
 			输出内容 += x.replace(new RegExp(备改内容, 'g'), 正确内容).replace("[", "").replace("]", "") + '\n';
 		} else {
 			输出内容 += x + '\n';
@@ -5747,8 +5807,7 @@ function Surge订阅配置文件热补丁(content, url, config_JSON) {
 async function 请求日志记录(env, request, 访问IP, 请求类型 = "Get_SUB", config_JSON, 是否写入KV日志 = true) {
 	try {
 		const 当前时间 = new Date();
-		const cf = request.cf || {};
-		const 日志内容 = { TYPE: 请求类型, IP: 访问IP, ASN: `AS${cf.asn || '0'} ${cf.asOrganization || 'Unknown'}`, CC: `${cf.country || 'N/A'} ${cf.city || 'N/A'}`, URL: request.url, UA: request.headers.get('User-Agent') || 'Unknown', TIME: 当前时间.getTime() };
+		const 日志内容 = { TYPE: 请求类型, IP: 访问IP, ASN: `AS${request.cf.asn || '0'} ${request.cf.asOrganization || 'Unknown'}`, CC: `${request.cf.country || 'N/A'} ${request.cf.city || 'N/A'}`, URL: request.url, UA: request.headers.get('User-Agent') || 'Unknown', TIME: 当前时间.getTime() };
 		if (config_JSON.TG.启用) {
 			try {
 				const TG_TXT = await D1Get(env, 'tg.json');
@@ -5778,15 +5837,26 @@ async function 请求日志记录(env, request, 访问IP, 请求类型 = "Get_SU
 			} catch (error) { console.error(`读取tg.json出错: ${error.message}`) }
 		}
 		是否写入KV日志 = ['1', 'true'].includes(env.OFF_LOG) ? false : 是否写入KV日志;
-		if (是否写入KV日志 && env?.DB) {
-			const cf = request.cf || {};
-			日志内容.ASN = `AS${cf.asn || '0'} ${cf.asOrganization || 'Unknown'}`;
-			日志内容.CC = `${cf.country || 'N/A'} ${cf.city || 'N/A'}`;
-			await env.DB.prepare('INSERT INTO matix_logs(time,type,ip,asn,cc,url,ua) VALUES (?1,?2,?3,?4,?5,?6,?7)').bind(日志内容.TIME, 日志内容.TYPE, 日志内容.IP, 日志内容.ASN, 日志内容.CC, 日志内容.URL, 日志内容.UA).run();
-			await env.DB.prepare('DELETE FROM matix_logs WHERE id NOT IN (SELECT id FROM matix_logs ORDER BY id DESC LIMIT 1000)').run();
-		}
-		await 清理AuthSessions(env);
-		if (!是否写入KV日志) return;	} catch (error) { console.error(`日志记录失败: ${error.message}`) }
+		if (!是否写入KV日志) return;
+		let 日志数组 = [];
+		const 现有日志 = await D1Get(env, 'log.json'), D1容量限制 = 1.5;//MB (D1 hard row/value limit is 2MB — keep headroom)
+		if (现有日志) {
+			try {
+				日志数组 = JSON.parse(现有日志);
+				if (!Array.isArray(日志数组)) { 日志数组 = [日志内容] }
+				else if (请求类型 !== "Get_SUB") {
+					const 三十分钟前时间戳 = 当前时间.getTime() - 30 * 60 * 1000;
+					if (日志数组.some(log => log.TYPE !== "Get_SUB" && log.IP === 访问IP && log.URL === request.url && log.UA === (request.headers.get('User-Agent') || 'Unknown') && log.TIME >= 三十分钟前时间戳)) return;
+					日志数组.push(日志内容);
+					while (JSON.stringify(日志数组, null, 2).length > D1容量限制 * 1024 * 1024 && 日志数组.length > 0) 日志数组.shift();
+				} else {
+					日志数组.push(日志内容);
+					while (JSON.stringify(日志数组, null, 2).length > D1容量限制 * 1024 * 1024 && 日志数组.length > 0) 日志数组.shift();
+				}
+			} catch (e) { 日志数组 = [日志内容] }
+		} else { 日志数组 = [日志内容] }
+		await D1Put(env, 'log.json', JSON.stringify(日志数组, null, 2));
+	} catch (error) { console.error(`日志记录失败: ${error.message}`) }
 }
 
 function 掩码敏感信息(文本, 前缀长度 = 3, 后缀长度 = 2) {
@@ -5801,9 +5871,16 @@ function 掩码敏感信息(文本, 前缀长度 = 3, 后缀长度 = 2) {
 }
 
 async function MD5MD5(文本) {
-	const input = String(文本 == null ? '' : 文本);
-	const 第一次十六进制 = md5Pure(input);
-	const 第二次十六进制 = md5Pure(第一次十六进制.slice(7, 27));
+	const 编码器 = new TextEncoder();
+
+	const 第一次哈希 = await crypto.subtle.digest('MD5', 编码器.encode(文本));
+	const 第一次哈希数组 = Array.from(new Uint8Array(第一次哈希));
+	const 第一次十六进制 = 第一次哈希数组.map(字节 => 字节.toString(16).padStart(2, '0')).join('');
+
+	const 第二次哈希 = await crypto.subtle.digest('MD5', 编码器.encode(第一次十六进制.slice(7, 27)));
+	const 第二次哈希数组 = Array.from(new Uint8Array(第二次哈希));
+	const 第二次十六进制 = 第二次哈希数组.map(字节 => 字节.toString(16).padStart(2, '0')).join('');
+
 	return 第二次十六进制.toLowerCase();
 }
 
@@ -5825,7 +5902,7 @@ function 替换星号为随机字符(内容) {
 	});
 }
 
-const DoH缓存 = new Map();
+const DoH缓存 = {};
 const DoH缓存最大条目 = 256;
 const DoH记录类型映射 = { A: 1, NS: 2, CNAME: 5, MX: 15, TXT: 16, AAAA: 28, SRV: 33, HTTPS: 65 };
 async function DoH查询(域名, 记录类型, DoH解析服务 = "https://cloudflare-dns.com/dns-query") {
@@ -5834,7 +5911,7 @@ async function DoH查询(域名, 记录类型, DoH解析服务 = "https://cloudf
 	const 缓存键 = `${规范化域名}:${规范化记录类型}`;
 	const qtype = DoH记录类型映射[规范化记录类型] || 1;
 	const 当前时间戳 = Date.now();
-	const 现缓存项 = DoH缓存.get(缓存键);
+	const 现缓存项 = DoH缓存[缓存键];
 	if (现缓存项 && 当前时间戳 < 现缓存项.过期时间) {
 		log(`[DoH查询] 命中缓存 ${域名} ${记录类型} via ${DoH解析服务}`);
 		return 现缓存项.data.map(data => ({ type: qtype, data }));
@@ -5968,13 +6045,16 @@ async function DoH查询(域名, 记录类型, DoH解析服务 = "https://cloudf
 		const 缓存过期时间 = Date.now() + 缓存TTL * 1000;
 		const 缓存数据 = 相关记录.map(answer => answer.data);
 		if (缓存数据.length > 0 || answers.length === 0) {
-			const 清理时间戳 = Date.now();
-			for (const [缓存条目键, 缓存条目] of DoH缓存) {
-				if (清理时间戳 >= 缓存条目.过期时间) DoH缓存.delete(缓存条目键);
+			if (Object.keys(DoH缓存).length >= DoH缓存最大条目) {
+				const 清理时间戳 = Date.now();
+				for (const [缓存条目键, 缓存条目] of Object.entries(DoH缓存)) {
+					if (清理时间戳 >= 缓存条目.过期时间) delete DoH缓存[缓存条目键];
+				}
+				if (Object.keys(DoH缓存).length >= DoH缓存最大条目) {
+					delete DoH缓存[Object.keys(DoH缓存)[0]];
+				}
 			}
-			if (DoH缓存.has(缓存键)) DoH缓存.delete(缓存键);
-			while (DoH缓存.size >= DoH缓存最大条目) DoH缓存.delete(DoH缓存.keys().next().value);
-			DoH缓存.set(缓存键, { data: 缓存数据, 过期时间: 缓存过期时间 });
+			DoH缓存[缓存键] = { data: 缓存数据, 过期时间: 缓存过期时间 };
 			log(`[DoH查询] 写入缓存 ${域名} ${记录类型} TTL=${缓存TTL}s${缓存数据.length === 0 ? '(empty result)' : ''}`);
 		}
 		return answers;
@@ -6091,32 +6171,19 @@ async function 读取config_JSON(env, hostname, userID, UA = "Mozilla/5.0", 重�
 		}
 	};
 
-	let configJSON = null;
 	try {
-		configJSON = await D1Get(env, 'config.json');
+		let configJSON = await D1Get(env, 'config.json');
 		if (!configJSON || 重置配置 == true) {
-			if (env?.DB) await D1Put(env, 'config.json', JSON.stringify(默认配置JSON, null, 2));
+			await D1Put(env, 'config.json', JSON.stringify(默认配置JSON, null, 2));
 			config_JSON = 默认配置JSON;
 		} else {
 			config_JSON = JSON.parse(configJSON);
 		}
 	} catch (error) {
 		console.error(`读取config_JSON出错: ${error.message}`);
-		if (env?.DB && configJSON) {
-			try { await D1Put(env, 'config.json.bak', configJSON); } catch (backupError) { console.error(`保存config.json.bak失败: ${backupError.message}`); }
-		}
-		if (env?.DB) { try { await D1Put(env, 'config.json', JSON.stringify(默认配置JSON, null, 2)); } catch (writeError) { console.error(`写入默认config失败: ${writeError.message}`); } }
 		config_JSON = 默认配置JSON;
 	}
 
-	if (!config_JSON || typeof config_JSON !== 'object') config_JSON = 默认配置JSON;
-	if (!config_JSON.订阅转换配置 || typeof config_JSON.订阅转换配置 !== 'object') config_JSON.订阅转换配置 = {};
-	if (!config_JSON.优选订阅生成 || typeof config_JSON.优选订阅生成 !== 'object') config_JSON.优选订阅生成 = 默认配置JSON.优选订阅生成;
-	if (!config_JSON.反代 || typeof config_JSON.反代 !== 'object') config_JSON.反代 = 默认配置JSON.反代;
-	if (!config_JSON.反代.路径模板 || typeof config_JSON.反代.路径模板 !== 'object') config_JSON.反代.路径模板 = 默认配置JSON.反代.路径模板;
-	if (!config_JSON.反代.SOCKS5 || typeof config_JSON.反代.SOCKS5 !== 'object') config_JSON.反代.SOCKS5 = 默认配置JSON.反代.SOCKS5;
-	if (!config_JSON.TG || typeof config_JSON.TG !== 'object') config_JSON.TG = 默认配置JSON.TG;
-	if (!config_JSON.CF || typeof config_JSON.CF !== 'object') config_JSON.CF = 默认配置JSON.CF;
 	if (!config_JSON.订阅转换配置.SUBLIST) config_JSON.订阅转换配置.SUBLIST = false;
 	if (!config_JSON.订阅转换配置.UDP) config_JSON.订阅转换配置.UDP = false;
 	if (!config_JSON.订阅转换配置.XUDP) config_JSON.订阅转换配置.XUDP = false;
@@ -6393,6 +6460,43 @@ async function 生成随机IP(request, count = 16, 指定端口 = -1) {
 		return `${ip}:${目标端口}#${cfname}${index + 1}`;
 	});
 	return [randomIPs, randomIPs.join('\n')];
+}
+
+
+// [MX] Pull clean IPs from the configured repository source and format them as "ip:port#name".
+async function 获取远程优选IP(config_JSON, 覆盖源, 数量 = 50) {
+	const source = String(覆盖源 || config_JSON?.优选订阅生成?.CLEAN_IP_SOURCE || '').trim();
+	if (!/^https?:\/\//i.test(source)) throw new Error('Invalid source URL');
+	const limit = Math.min(Math.max(Number(数量) || 50, 1), 200);
+	const res = await fetch(source, { headers: { 'Accept': 'application/json,text/plain,*/*', 'User-Agent': 'Matix-Edge' } });
+	if (!res.ok) throw new Error('Source returned HTTP ' + res.status);
+	const text = await res.text();
+	const ipRe = /^(?:\d{1,3}\.){3}\d{1,3}(?::\d+)?(?:#.*)?$/;
+	const values = [];
+	try {
+		const walk = (v) => {
+			if (typeof v === 'string') { if (ipRe.test(v.trim())) values.push(v.trim()); }
+			else if (Array.isArray(v)) v.forEach(walk);
+			else if (v && typeof v === 'object') {
+				if (typeof v.ip === 'string' && ipRe.test(v.ip.trim())) values.push(v.ip.trim() + (v.port && !v.ip.includes(':') ? ':' + v.port : ''));
+				else Object.values(v).forEach(walk);
+			}
+		};
+		walk(JSON.parse(text));
+	} catch { text.split(/\r?\n|,/).map(x => x.trim()).filter(Boolean).forEach(x => values.push(x)); }
+	const seen = new Set(), out = [];
+	for (const raw of values) {
+		if (!ipRe.test(raw)) continue;
+		const addr = raw.split('#')[0];
+		const [ip, port] = addr.split(':');
+		const key = ip + ':' + (port || '443');
+		if (seen.has(key)) continue;
+		seen.add(key);
+		out.push(key + '#Matix-' + (out.length + 1));
+		if (out.length >= limit) break;
+	}
+	if (!out.length) throw new Error('No IPs found in source');
+	return out;
 }
 
 async function 整理成数组(内容) {
@@ -6725,7 +6829,7 @@ async function 反代参数获取(url, uuid, 默认反代IP = '', 默认反代�
 	const 提取路径值 = (值) => {
 		if (!值.includes('://')) {
 			const 斜杠索引 = 值.indexOf('/');
-			return 斜杠索引 === 0 ? '/' : (斜杠索引 > 0 ? 值.slice(0, 斜杠索引) : 值);
+			return 斜杠索引 > 0 ? 值.slice(0, 斜杠索引) : 值;
 		}
 		const 协议拆分 = 值.split('://');
 		if (协议拆分.length !== 2) return 值;
@@ -6828,7 +6932,7 @@ function 获取SOCKS5账号(address, 默认端口 = 80) {
 		}
 	}
 
-	if (!Number.isInteger(port) || port <= 0 || port > 65535) throw new Error('Invalid SOCKS address format: port must be between 1 and 65535');
+	if (isNaN(port)) throw new Error('Invalid SOCKS address format: port must be numeric');
 	if (hostname.includes(":") && !IPv6方括号正则.test(hostname)) throw new Error('Invalid SOCKS address format: IPv6 address must be in brackets, e.g. [2001:db8::1]');
 	return { username, password, hostname, port };
 }
@@ -7251,21 +7355,25 @@ async function 处理Telegram机器人Webhook(botTokenFromPath, request, env, ur
 function matrixEdgeSetupNotice(kind) {
 	const isAdmin = kind === 'ADMIN';
 	return `<!DOCTYPE html>
-<html lang="fa" dir="rtl" data-lang="fa">
+<html lang="fa" dir="rtl" data-lang="fa" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MatiX — Setup Required</title>
+<link rel="icon" type="image/png" href="${MATIX_LOGO}">
+<link rel="apple-touch-icon" href="${MATIX_LOGO}">
+<meta name="theme-color" content="#d9d9dc">
 <style>
-  :root{ --purple:#7c3aed; --purple-2:#8b5cf6; --pink:#a855f7; --bg-0:#05010c; --text:#e9e4ff; --muted:#9c93c9; }
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&family=Inter:wght@400;600;800&display=swap');
+  :root{ --purple:#2563eb; --purple-2:#3b82f6; --pink:#0891b2; --bg-0:#05010c; --text:#e9e4ff; --muted:#9c93c9; }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{height:100%;}
-  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; background:var(--bg-0); color:var(--text);
+  body{font-family:'Vazirmatn','Inter',system-ui,sans-serif; background:var(--bg-0); color:var(--text);
     display:flex; align-items:center; justify-content:center; min-height:100vh; position:relative; overflow:hidden;}
-  html[data-lang="en"] body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;}
+  html[data-lang="en"] body{font-family:'Inter','Vazirmatn',system-ui,sans-serif;}
   .bg{position:fixed; inset:0; z-index:0;
-    background:radial-gradient(circle at 20% 20%, #1a0833 0%, transparent 45%),
-               radial-gradient(circle at 80% 80%, #2b0a3d 0%, transparent 45%), var(--bg-0);}
+    background:radial-gradient(circle at 20% 20%, #1a0b3a 0%, transparent 45%),
+               radial-gradient(circle at 80% 80%, #2a0a3a 0%, transparent 45%), var(--bg-0);}
   .orb{position:absolute; border-radius:50%; filter:blur(80px); opacity:.5;}
   .orb1{width:34vw;height:34vw;background:var(--purple);top:-10%;left:-8%;animation:f1 16s ease-in-out infinite;}
   .orb2{width:28vw;height:28vw;background:var(--pink);bottom:-10%;right:-6%;animation:f2 20s ease-in-out infinite;}
@@ -7273,27 +7381,27 @@ function matrixEdgeSetupNotice(kind) {
   @keyframes f2{0%,100%{transform:translate(0,0)}50%{transform:translate(-4vw,-5vh)}}
   .wrap{position:relative; z-index:2; max-width:460px; margin:24px;}
   .card{background:linear-gradient(180deg, rgba(8,14,32,.75), rgba(5,10,24,.85));
-    border:1px solid rgba(139,92,246,.35); border-radius:20px; padding:34px 30px; backdrop-filter:blur(14px);
-    box-shadow:0 0 0 1px rgba(139,92,246,.08), 0 20px 60px -10px rgba(88,28,135,.55);}
+    border:1px solid rgba(59,130,246,.35); border-radius:20px; padding:34px 30px; backdrop-filter:blur(14px);
+    box-shadow:0 0 0 1px rgba(59,130,246,.08), 0 20px 60px -10px rgba(88,28,135,.55);}
   .brand{display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:16px;}
   .logo{width:34px; height:34px; border-radius:50%;
-    background:url(data:image/webp;base64,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) center/cover no-repeat, #05010c;
-    box-shadow:0 0 16px rgba(139,92,246,.75), 0 0 0 2px rgba(139,92,246,.35); animation:logoPulse 3s ease-in-out infinite;}
-  @keyframes logoPulse{0%,100%{box-shadow:0 0 14px rgba(139,92,246,.65), 0 0 0 2px rgba(139,92,246,.3)}50%{box-shadow:0 0 26px rgba(192,132,252,.85), 0 0 0 2px rgba(192,132,252,.5)}}
+    background:url(${MATIX_LOGO}) center/cover no-repeat, #05010c;
+    box-shadow:0 0 16px rgba(59,130,246,.75), 0 0 0 2px rgba(59,130,246,.35); animation:logoPulse 3s ease-in-out infinite;}
+  @keyframes logoPulse{0%,100%{box-shadow:0 0 14px rgba(59,130,246,.65), 0 0 0 2px rgba(59,130,246,.3)}50%{box-shadow:0 0 26px rgba(34,211,238,.85), 0 0 0 2px rgba(34,211,238,.5)}}
   .title{font-weight:800; font-size:19px; background:linear-gradient(90deg,#fff,var(--purple-2));
     -webkit-background-clip:text; background-clip:text; color:transparent;}
   h1{font-size:17px; margin-bottom:10px; color:#fff;}
   p{font-size:13.5px; line-height:1.9; color:var(--muted); margin-bottom:10px;}
-  code{background:rgba(139,92,246,.15); border:1px solid rgba(139,92,246,.3); padding:2px 7px; border-radius:6px; color:#e9d5ff; font-family:monospace;}
+  code{background:rgba(59,130,246,.15); border:1px solid rgba(59,130,246,.3); padding:2px 7px; border-radius:6px; color:#e9d5ff; font-family:monospace;}
   .langtoggle{position:fixed; top:18px; inset-inline-end:18px; z-index:5;
-    background:rgba(255,255,255,.06); border:1px solid rgba(139,92,246,.35); color:var(--text);
+    background:rgba(255,255,255,.06); border:1px solid rgba(59,130,246,.35); color:var(--text);
     border-radius:999px; padding:7px 14px; font-size:12px; cursor:pointer;}
   [data-en]{display:none;}
   html[data-lang="en"] [data-fa]{display:none;}
   html[data-lang="en"] [data-en]{display:inline;}
-</style>
+${MX_CSS_COMMON}</style>
 </head>
-<body>
+<body class="mx">
   <div class="bg"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
   <button class="langtoggle" id="langBtn">EN</button>
   <div class="wrap"><div class="card">
@@ -7303,9 +7411,9 @@ function matrixEdgeSetupNotice(kind) {
     <p><span data-fa>متغیر محیطی <code>ADMIN</code> تنظیم نشده. برو به Settings → Variables and Secrets و یک رمز عبور برای <code>ADMIN</code> تعریف کن، سپس دوباره Deploy کن.</span>
        <span data-en>The <code>ADMIN</code> environment variable is not set. Go to Settings → Variables and Secrets, add a password for <code>ADMIN</code>, then redeploy.</span></p>
     ` : `
-    <h1><span data-fa>D1 تنظیم نشده</span><span data-en>D1 not bound</span></h1>
-    <p><span data-fa>یک D1 Database به این Worker وصل نیست. برو به Settings → Bindings → Add → D1 Database و متغیر را دقیقاً با نام <code>DB</code> اضافه کن، سپس دوباره Deploy کن.</span>
-       <span data-en>No D1 Database is bound to this Worker. Go to Settings → Bindings → Add → D1 Database, name the variable exactly <code>DB</code>, then redeploy.</span></p>
+    <h1><span data-fa>KV تنظیم نشده</span><span data-en>KV not bound</span></h1>
+    <p><span data-fa>یک KV Namespace به این Worker وصل نیست. برو به Settings → Bindings → Add → KV Namespace و متغیر را دقیقاً با نام <code>KV</code> اضافه کن، سپس دوباره Deploy کن.</span>
+       <span data-en>No KV Namespace is bound to this Worker. Go to Settings → Bindings → Add → KV Namespace, name the variable exactly <code>KV</code>, then redeploy.</span></p>
     `}
   </div></div>
 <script>
@@ -7330,31 +7438,34 @@ function matrixEdgeSetupNotice(kind) {
 
 function matrixEdgeLoginPage() {
 	return `<!DOCTYPE html>
-<html lang="fa" dir="rtl" data-lang="fa">
+<html lang="fa" dir="rtl" data-lang="fa" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
 <title>MatiX</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔵</text></svg>">
+<link rel="icon" type="image/png" href="${MATIX_LOGO}">
+<link rel="apple-touch-icon" href="${MATIX_LOGO}">
+<meta name="theme-color" content="#d9d9dc">
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;800&family=Inter:wght@400;600;800&display=swap');
   :root{
-    --bg-0:#05010c; --bg-1:#0c0518; --purple:#7c3aed; --purple-2:#8b5cf6;
-    --purple-deep:#4c1d95; --pink:#a855f7; --text:#e9e4ff; --muted:#9c93c9;
+    --bg-0:#05010c; --bg-1:#0c0518; --purple:#2563eb; --purple-2:#3b82f6;
+    --purple-deep:#1e40af; --pink:#0891b2; --text:#e9e4ff; --muted:#9c93c9;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
   html,body{height:100%;}
   body{
-    font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+    font-family:'Vazirmatn','Inter',system-ui,sans-serif;
     background:var(--bg-0); color:var(--text);
     display:flex; align-items:center; justify-content:center;
     min-height:100vh; overflow:hidden; position:relative;
   }
-  [data-lang="en"] body, html[data-lang="en"]{ font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; }
+  [data-lang="en"] body, html[data-lang="en"]{ font-family:'Inter','Vazirmatn',system-ui,sans-serif; }
 
   /* ---------- animated background ---------- */
   .bg{position:fixed; inset:0; z-index:0; overflow:hidden; background:
-      radial-gradient(circle at 20% 20%, #1a0833 0%, transparent 45%),
-      radial-gradient(circle at 80% 80%, #2b0a3d 0%, transparent 45%),
+      radial-gradient(circle at 20% 20%, #1a0b3a 0%, transparent 45%),
+      radial-gradient(circle at 80% 80%, #2a0a3a 0%, transparent 45%),
       var(--bg-0);}
   .orb{position:absolute; border-radius:50%; filter:blur(70px); opacity:.55; will-change:transform;}
   .orb1{width:38vw; height:38vw; background:var(--purple); top:-10%; left:-8%; animation:float1 16s ease-in-out infinite;}
@@ -7365,8 +7476,8 @@ function matrixEdgeLoginPage() {
   @keyframes float3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-4vw,5vh) scale(.9)}}
 
   .grid{position:absolute; inset:0;
-    background-image:linear-gradient(rgba(124,58,237,.07) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(124,58,237,.07) 1px, transparent 1px);
+    background-image:linear-gradient(rgba(37,99,235,.07) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(37,99,235,.07) 1px, transparent 1px);
     background-size:42px 42px; mask-image:radial-gradient(circle at 50% 40%, black, transparent 75%);}
 
   .particles{position:absolute; inset:0;}
@@ -7379,15 +7490,15 @@ function matrixEdgeLoginPage() {
   @keyframes rise-in{from{opacity:0; transform:translateY(16px)}to{opacity:1; transform:none}}
   .card{
     background:linear-gradient(180deg, rgba(8,14,32,.75), rgba(5,10,24,.85));
-    border:1px solid rgba(139,92,246,.35);
+    border:1px solid rgba(59,130,246,.35);
     border-radius:20px; padding:36px 30px; backdrop-filter:blur(14px);
-    box-shadow:0 0 0 1px rgba(139,92,246,.08), 0 20px 60px -10px rgba(88,28,135,.55), 0 0 40px -8px rgba(192,38,211,.35);
+    box-shadow:0 0 0 1px rgba(59,130,246,.08), 0 20px 60px -10px rgba(88,28,135,.55), 0 0 40px -8px rgba(192,38,211,.35);
   }
   .brand{display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:6px;}
   .logo{width:40px; height:40px; border-radius:50%;
-    background:url(data:image/webp;base64,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) center/cover no-repeat, #05010c;
-    box-shadow:0 0 18px rgba(139,92,246,.75), 0 0 0 2px rgba(139,92,246,.35); animation:logoPulse 3s ease-in-out infinite;}
-  @keyframes logoPulse{0%,100%{box-shadow:0 0 16px rgba(139,92,246,.65), 0 0 0 2px rgba(139,92,246,.3)}50%{box-shadow:0 0 28px rgba(192,132,252,.85), 0 0 0 2px rgba(192,132,252,.5)}}
+    background:url(${MATIX_LOGO}) center/cover no-repeat, #05010c;
+    box-shadow:0 0 18px rgba(59,130,246,.75), 0 0 0 2px rgba(59,130,246,.35); animation:logoPulse 3s ease-in-out infinite;}
+  @keyframes logoPulse{0%,100%{box-shadow:0 0 16px rgba(59,130,246,.65), 0 0 0 2px rgba(59,130,246,.3)}50%{box-shadow:0 0 28px rgba(34,211,238,.85), 0 0 0 2px rgba(34,211,238,.5)}}
   .title{font-weight:800; font-size:22px; letter-spacing:.5px;
     background:linear-gradient(90deg,#fff,var(--purple-2)); -webkit-background-clip:text; background-clip:text; color:transparent;}
   .subtitle{text-align:center; color:var(--muted); font-size:13px; margin:2px 0 26px;}
@@ -7396,15 +7507,15 @@ function matrixEdgeLoginPage() {
   label{display:block; font-size:13px; color:var(--muted); margin-bottom:7px;}
   input[type=password], input[type=text]{
     width:100%; padding:13px 14px; border-radius:12px; font-size:15px;
-    background:rgba(255,255,255,.04); border:1px solid rgba(139,92,246,.3); color:var(--text); outline:none;
+    background:rgba(255,255,255,.04); border:1px solid rgba(59,130,246,.3); color:var(--text); outline:none;
     transition:border-color .2s, box-shadow .2s;
   }
-  input:focus{border-color:var(--purple-2); box-shadow:0 0 0 3px rgba(139,92,246,.2);}
+  input:focus{border-color:var(--purple-2); box-shadow:0 0 0 3px rgba(59,130,246,.2);}
   button.submit{
     width:100%; margin-top:8px; padding:13px; border:none; border-radius:12px; cursor:pointer;
     font-weight:700; font-size:15px; color:#fff;
     background:linear-gradient(90deg, var(--purple-deep), var(--purple), var(--pink));
-    background-size:200% 100%; box-shadow:0 8px 24px -6px rgba(124,58,237,.6);
+    background-size:200% 100%; box-shadow:0 8px 24px -6px rgba(37,99,235,.6);
     transition:background-position .4s, transform .15s;
   }
   button.submit:hover{background-position:100% 0;}
@@ -7415,16 +7526,16 @@ function matrixEdgeLoginPage() {
   .foot{margin-top:22px; text-align:center; font-size:11.5px; color:#6b6291; letter-spacing:.4px;}
 
   .langtoggle{position:fixed; top:18px; inset-inline-end:18px; z-index:5;
-    background:rgba(255,255,255,.06); border:1px solid rgba(139,92,246,.35); color:var(--text);
+    background:rgba(255,255,255,.06); border:1px solid rgba(59,130,246,.35); color:var(--text);
     border-radius:999px; padding:7px 14px; font-size:12px; cursor:pointer; backdrop-filter:blur(8px);}
   .langtoggle:hover{border-color:var(--purple-2);}
 
   [data-en]{display:none;}
   html[data-lang="en"] [data-fa]{display:none;}
   html[data-lang="en"] [data-en]{display:inline;}
-</style>
+${MX_CSS_COMMON}</style>
 </head>
-<body>
+<body class="mx">
   <div class="bg">
     <div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div>
     <div class="grid"></div>
@@ -7529,48 +7640,50 @@ function matrixEdgeLoginPage() {
 
 function matrixEdgeAdminDashboard() {
 	return `<!DOCTYPE html>
-<html lang="fa" dir="rtl" data-lang="fa">
+<html lang="fa" dir="rtl" data-lang="fa" data-theme="light">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard</title>
+<title>MatiX — Dashboard</title>
+<link rel="icon" type="image/png" href="${MATIX_LOGO}">
+<link rel="apple-touch-icon" href="${MATIX_LOGO}">
+<meta name="theme-color" content="#d9d9dc">
 <style>
-  :root{ --purple:#7c3aed; --purple-2:#8b5cf6; --pink:#7c3aed; --bg-0:#05010c; --card:#0f0920; --text:#e9e4ff; --muted:#9c93c9; --green:#34d399; --red:#f87171; }
-  html[data-theme="light"]{ --bg-0:#f7f3ff; --card:#ffffff; --text:#0f172a; --muted:#64748b; }
-  html[data-theme="light"] header{background:rgba(255,255,255,.86); border-bottom-color:rgba(124,58,237,.22);}
-  html[data-theme="light"] .card{background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(247,243,255,.92)); border-color:rgba(124,58,237,.24); box-shadow:0 16px 40px -18px rgba(124,58,237,.28);}
+  @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;800&family=Inter:wght@400;500;600;800&display=swap');
+  :root{ --purple:#2563eb; --purple-2:#3b82f6; --pink:#0891b2; --bg-0:#05010c; --card:#0f0920; --text:#e9e4ff; --muted:#9c93c9; --green:#34d399; --red:#f87171; }
+  html[data-theme="light"]{ --bg-0:#eff6ff; --card:#ffffff; --text:#0f172a; --muted:#64748b; }
+  html[data-theme="light"] header{background:rgba(255,255,255,.75); border-bottom-color:rgba(37,99,235,.22);}
+  html[data-theme="light"] .card{background:linear-gradient(180deg, rgba(255,255,255,.92), rgba(239,246,255,.88)); border-color:rgba(37,99,235,.16); box-shadow:0 16px 40px -18px rgba(37,99,235,.28);}
   html[data-theme="light"] .card h2{color:var(--text);}
-  html[data-theme="light"] .side{background:rgba(255,255,255,.98); border-color:rgba(124,58,237,.18);}
-  html[data-theme="light"] .side a{background:rgba(124,58,237,.045);}
+  html[data-theme="light"] .side{background:rgba(255,255,255,.98); border-color:rgba(37,99,235,.18);}
+  html[data-theme="light"] .side a{background:rgba(37,99,235,.045);}
   html[data-theme="light"] .backdrop{background:rgba(60,40,90,.25);}
-  html[data-theme="light"] input[type=text], html[data-theme="light"] input[type=password], html[data-theme="light"] select, html[data-theme="light"] textarea{background:rgba(124,58,237,.055); border-color:rgba(124,58,237,.2); color:var(--text);}
-  html[data-theme="light"] .usage-stat{background:rgba(124,58,237,.05); border-color:rgba(124,58,237,.16);}
-  html[data-theme="light"] .toast{background:rgba(255,255,255,.98); border-color:rgba(124,58,237,.32); color:#0f172a;}
-  html[data-theme="light"] .modal-card{background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(239,246,255,.96)); border-color:rgba(124,58,237,.22);}
-  html[data-theme="light"] .modal-card.glass{background:linear-gradient(135deg, rgba(255,255,255,.72), rgba(239,246,255,.7)); border-color:rgba(124,58,237,.22);}
-  html[data-theme="light"] .social-btn{background:rgba(124,58,237,.06); border-color:rgba(124,58,237,.16); color:var(--text);}
-  html[data-theme="light"] button.chip{background:rgba(124,58,237,.08); color:#1e3a8a; border-color:rgba(124,58,237,.28);}
+  html[data-theme="light"] input[type=text], html[data-theme="light"] input[type=password], html[data-theme="light"] select, html[data-theme="light"] textarea{background:rgba(37,99,235,.055); border-color:rgba(37,99,235,.2); color:var(--text);}
+  html[data-theme="light"] .usage-stat{background:rgba(37,99,235,.05); border-color:rgba(37,99,235,.16);}
+  html[data-theme="light"] .toast{background:rgba(255,255,255,.98); border-color:rgba(37,99,235,.32); color:#0f172a;}
+  html[data-theme="light"] .modal-card{background:linear-gradient(180deg, rgba(255,255,255,.98), rgba(239,246,255,.96)); border-color:rgba(37,99,235,.22);}
+  html[data-theme="light"] .modal-card.glass{background:linear-gradient(135deg, rgba(255,255,255,.72), rgba(239,246,255,.7)); border-color:rgba(37,99,235,.22);}
+  html[data-theme="light"] .social-btn{background:rgba(37,99,235,.06); border-color:rgba(37,99,235,.16); color:var(--text);}
+  html[data-theme="light"] button.chip{background:rgba(37,99,235,.08); color:#1e3a8a; border-color:rgba(37,99,235,.28);}
   html[data-theme="light"] .brand-name{background:linear-gradient(90deg,#1e3a8a,var(--purple-2)); -webkit-background-clip:text; background-clip:text; color:transparent;}
-  html[data-theme="light"] .splash{background:radial-gradient(circle at 50% 30%, #eadcff 0%, #eff6ff 70%);}
-  html[data-theme="light"] .splash-bismillah{color:#6d28d9;}
-  html[data-theme="light"] .tnode{box-shadow:0 0 8px 2px rgba(124,58,237,.4);}
+  html[data-theme="light"] .splash{background:radial-gradient(circle at 50% 30%, #dbeafe 0%, #eff6ff 70%);}
+  html[data-theme="light"] .splash-bismillah{color:#1d4ed8;}
+  html[data-theme="light"] .tnode{box-shadow:0 0 8px 2px rgba(37,99,235,.4);}
   *{box-sizing:border-box;} html,body{margin:0; min-height:100%;}
-  body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif; background:var(--bg-0); color:var(--text); position:relative;}
-  html[data-lang="en"] body{font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;}
-  .bg{position:fixed; inset:0; z-index:0; overflow:hidden; background:
-    radial-gradient(circle at 50% 0%, rgba(124,58,237,.18) 0%, transparent 38%),
-    radial-gradient(circle at 8% 88%, rgba(76,29,149,.18) 0%, transparent 34%), #030207;}
-  html[data-theme="light"] .bg{background:radial-gradient(circle at 50% 0%, #eadcff 0%, transparent 45%), radial-gradient(circle at 90% 95%, #d8b4fe 0%, transparent 45%), var(--bg-0);}
-  .bg::before{content:'';position:absolute;inset:-28%;pointer-events:none;opacity:.9;filter:blur(34px);
-    background:radial-gradient(circle at 12% 22%,rgba(0,0,0,.92) 0 7%,transparent 17%),radial-gradient(circle at 78% 18%,rgba(0,0,0,.78) 0 6%,transparent 16%),radial-gradient(circle at 58% 72%,rgba(0,0,0,.88) 0 8%,transparent 18%),radial-gradient(circle at 24% 82%,rgba(0,0,0,.72) 0 6%,transparent 15%);
-    animation:matixBlobs 34s ease-in-out infinite alternate;transform:translate3d(0,0,0);will-change:transform;}
-  .bg::after{content:'';position:absolute;inset:-40%;pointer-events:none;background:radial-gradient(circle at 50% 50%,transparent 0 44%,rgba(124,58,237,.08) 58%,transparent 72%);animation:purpleBreath 18s ease-in-out infinite alternate;will-change:transform,opacity;}
-  @keyframes matixBlobs{0%{transform:translate3d(-3%,-2%,0) scale(1)}35%{transform:translate3d(4%,2%,0) scale(1.04)}70%{transform:translate3d(-2%,5%,0) scale(.98)}100%{transform:translate3d(5%,-3%,0) scale(1.06)}}
-  @keyframes purpleBreath{0%{transform:scale(.94);opacity:.55}100%{transform:scale(1.08);opacity:1}}
+  body{font-family:'Vazirmatn','Inter',system-ui,sans-serif; background:var(--bg-0); color:var(--text); position:relative;}
+  html[data-lang="en"] body{font-family:'Inter','Vazirmatn',system-ui,sans-serif;}
+  .bg{position:fixed; inset:0; z-index:0; overflow:hidden;
+    background:radial-gradient(circle at 15% 5%, #0b1a4d 0%, transparent 42%),
+               radial-gradient(circle at 90% 95%, #0a2a52 0%, transparent 42%), var(--bg-0);}
+  html[data-theme="light"] .bg{background:radial-gradient(circle at 15% 5%, #dbeafe 0%, transparent 45%), radial-gradient(circle at 90% 95%, #bfdbfe 0%, transparent 45%), var(--bg-0);}
+  .bg::after{content:'';position:absolute;inset:-50%;
+    background:conic-gradient(from 0deg, rgba(37,99,235,.16), rgba(34,211,238,.16), rgba(59,130,246,.12), rgba(34,211,238,.12), rgba(37,99,235,.16));
+    animation:bgSpin 50s linear infinite; mix-blend-mode:screen;}
+  @keyframes bgSpin{to{transform:rotate(360deg)}}
   .orb{position:absolute; border-radius:50%; filter:blur(64px); opacity:.55; will-change:transform;}
   html[data-theme="light"] .orb{opacity:.16;}
   .orb1{width:32vw;height:32vw;background:var(--purple);top:-12%;left:-8%;animation:f1 20s ease-in-out infinite;}
-  .orb3{width:24vw;height:24vw;background:#c084fc;top:42%;left:55%;animation:f3 18s ease-in-out infinite;}
+  .orb3{width:24vw;height:24vw;background:#22d3ee;top:42%;left:55%;animation:f3 18s ease-in-out infinite;}
   @keyframes f3{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(-5vw,4vh) scale(.85)}}
   .orb2{width:28vw;height:28vw;background:var(--pink);bottom:-12%;right:-6%;animation:f2 24s ease-in-out infinite;}
   .orb4{width:18vw;height:18vw;background:#818cf8;top:62%;left:8%;animation:f4 26s ease-in-out infinite;}
@@ -7592,34 +7705,36 @@ function matrixEdgeAdminDashboard() {
   @keyframes garcFlow{to{stroke-dashoffset:-22}}
 
   header{position:relative; z-index:2; display:flex; align-items:center; justify-content:space-between;
-    padding:14px 22px; background:rgba(12,5,24,.82); border-bottom:1px solid rgba(139,92,246,.3); backdrop-filter:blur(6px);
+    padding:14px 22px; background:rgba(12,5,24,.82); border-bottom:1px solid rgba(59,130,246,.3); backdrop-filter:blur(6px);
     position:sticky; top:0;}
   .brand{display:flex; align-items:center; gap:10px;}
   .logo{width:32px; height:32px; border-radius:50%;
-    background:url(data:image/webp;base64,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) center/cover no-repeat, #05010c;
-    box-shadow:0 0 14px rgba(139,92,246,.75), 0 0 0 2px rgba(139,92,246,.35); animation:logoPulse 3s ease-in-out infinite;}
-  @keyframes logoPulse{0%,100%{box-shadow:0 0 12px rgba(139,92,246,.65), 0 0 0 2px rgba(139,92,246,.3)}50%{box-shadow:0 0 24px rgba(192,132,252,.85), 0 0 0 2px rgba(192,132,252,.5)}}
-  .brand-name{display:none;}
+    background:url(${MATIX_LOGO}) center/cover no-repeat, #05010c;
+    box-shadow:0 0 14px rgba(59,130,246,.75), 0 0 0 2px rgba(59,130,246,.35); animation:logoPulse 3s ease-in-out infinite;}
+  @keyframes logoPulse{0%,100%{box-shadow:0 0 12px rgba(59,130,246,.65), 0 0 0 2px rgba(59,130,246,.3)}50%{box-shadow:0 0 24px rgba(34,211,238,.85), 0 0 0 2px rgba(34,211,238,.5)}}
+  .brand-name{font-weight:800; font-size:17px; background:linear-gradient(90deg,#fff,var(--purple-2));
+    -webkit-background-clip:text; background-clip:text; color:transparent;}
   .actions{display:flex; align-items:center; gap:10px;}
-  button.chip{background:linear-gradient(180deg,rgba(124,58,237,.22),rgba(76,29,149,.12)); border:1px solid rgba(139,92,246,.58); color:#fff;
-    border-radius:12px; min-height:38px; padding:7px 13px; font-size:12px; font-weight:700; cursor:pointer; box-shadow:0 6px 18px rgba(76,29,149,.16); transition:transform .18s,border-color .18s,background .18s;}
-  button.chip:hover{transform:translateY(-1px);border-color:#c084fc;background:rgba(139,92,246,.2);}
-    button.chip.danger{border-color:rgba(248,113,113,.45); color:#fda4a4;}
+  button.chip{background:rgba(255,255,255,.06); border:1px solid rgba(59,130,246,.35); color:var(--text);
+    border-radius:999px; padding:7px 14px; font-size:12px; cursor:pointer;}
+  button.chip:hover{border-color:var(--purple-2);}
+  button.chip.danger{border-color:rgba(248,113,113,.45); color:#fda4a4;}
 
-  main{position:relative; z-index:2; max-width:900px; margin:0 auto; padding:20px 16px 70px;
-    display:grid; grid-template-columns:1fr; gap:16px; align-items:start;}
-  main > .card{margin-bottom:0; width:100%;}
-  main > .card.wide{grid-column:auto;}
+  main{position:relative; z-index:2; max-width:960px; margin:0 auto; padding:20px 16px 60px;
+    display:grid; grid-template-columns:repeat(2, 1fr); gap:18px; align-items:start;}
+  main > .card{margin-bottom:0;}
+  main > .card.wide{grid-column:1 / -1;}
+  @media (max-width:760px){ main{grid-template-columns:1fr;} }
   main{perspective:1400px;}
-  .card{background:linear-gradient(180deg, rgba(13,7,28,.90), rgba(6,3,14,.94));
-    border:1px solid rgba(139,92,246,.28); border-radius:22px; padding:20px; margin-bottom:18px;
-    box-shadow:0 0 0 1px rgba(139,92,246,.05), 0 16px 40px -14px rgba(76,29,149,.5);
+  .card{background:linear-gradient(180deg, rgba(8,14,32,.62), rgba(5,10,24,.78));
+    border:1px solid rgba(59,130,246,.28); border-radius:22px; padding:20px; margin-bottom:18px;
+    box-shadow:0 0 0 1px rgba(59,130,246,.05), 0 16px 40px -14px rgba(15,45,120,.5);
     position:relative; overflow:hidden; transition:transform .15s ease-out, border-color .25s; backdrop-filter:blur(7px);
     transform-style:preserve-3d; will-change:transform;}
-  .card:hover{border-color:rgba(139,92,246,.45);}
+  .card:hover{border-color:rgba(59,130,246,.45);}
   .card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;
-    background:linear-gradient(90deg,#6d28d9,#8b5cf6,#c084fc,#d8b4fe,#6d28d9);background-size:300% 100%;
-    animation:cardBarMove 9s linear infinite;}
+    background:linear-gradient(90deg,#1d4ed8,#3b82f6,#22d3ee,#38bdf8,#1d4ed8);background-size:300% 100%;
+    animation:cardBarMove 6s linear infinite;}
   @keyframes cardBarMove{0%{background-position:0% 0%}100%{background-position:300% 0%}}
   html[data-theme="light"] .card h2{color:var(--text);}
   .card h2{font-size:14px; margin:0 0 14px; display:flex; align-items:center; gap:8px; color:#fff;}
@@ -7627,23 +7742,23 @@ function matrixEdgeAdminDashboard() {
 
   .row{display:flex; gap:10px; align-items:center;}
   .field{margin-bottom:13px;}
-  .icon{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:10px;background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.25);animation:bob 3s ease-in-out infinite;}
+  .icon{display:inline-flex;width:30px;height:30px;align-items:center;justify-content:center;border-radius:10px;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.25);animation:bob 3s ease-in-out infinite;}
   .theme-toggle{display:flex;align-items:center;justify-content:center;}
   .theme-toggle svg{color:#fbbf24;}
   .theme-toggle .icon-sun{animation:sunspin 6s linear infinite;}
   @keyframes sunspin{to{transform:rotate(360deg)}}
   @keyframes bob{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-3px) rotate(4deg)}}
-  .hamb{display:none;background:rgba(255,255,255,.06);border:1px solid rgba(139,92,246,.35);color:#fff;border-radius:12px;padding:8px 10px;font-size:18px;cursor:pointer;}
-  .side{position:fixed;inset:0 auto 0 0;width:280px;z-index:20;background:linear-gradient(180deg,rgba(20,8,42,.99),rgba(5,2,14,.99));backdrop-filter:blur(8px);border-right:1px solid rgba(139,92,246,.28);transform:translateX(-105%);transition:.25s;padding:80px 16px 20px;box-shadow:20px 0 60px rgba(0,0,0,.35);}
+  .hamb{display:none;background:rgba(255,255,255,.06);border:1px solid rgba(59,130,246,.35);color:#fff;border-radius:12px;padding:8px 10px;font-size:18px;cursor:pointer;}
+  .side{position:fixed;inset:0 auto 0 0;width:280px;z-index:20;background:rgba(5,10,24,.97);backdrop-filter:blur(8px);border-right:1px solid rgba(59,130,246,.28);transform:translateX(-105%);transition:.25s;padding:80px 16px 20px;box-shadow:20px 0 60px rgba(0,0,0,.35);}
   .side.open{transform:translateX(0);}
-  .side a{display:flex;gap:10px;align-items:center;padding:12px 14px;margin:6px 0;border-radius:14px;color:var(--text);text-decoration:none;background:linear-gradient(180deg,rgba(124,58,237,.12),rgba(76,29,149,.08));border:1px solid rgba(139,92,246,.10);}
-  .side a:hover{border-color:rgba(139,92,246,.55);background:rgba(124,58,237,.18);}
+  .side a{display:flex;gap:10px;align-items:center;padding:12px 14px;margin:6px 0;border-radius:14px;color:var(--text);text-decoration:none;background:rgba(255,255,255,.035);border:1px solid transparent;}
+  .side a:hover{border-color:rgba(59,130,246,.3);background:rgba(59,130,246,.08);}
   .backdrop{position:fixed;inset:0;z-index:19;background:rgba(0,0,0,.45);display:none;}
   .backdrop.show{display:block;}
   .usage-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:14px;}
-  .usage-stat{padding:16px;border-radius:18px;background:rgba(255,255,255,.035);border:1px solid rgba(139,92,246,.2);}
+  .usage-stat{padding:16px;border-radius:18px;background:rgba(255,255,255,.035);border:1px solid rgba(59,130,246,.2);}
   .status-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
-  .status-item{padding:12px 14px;border-radius:14px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.18);}
+  .status-item{padding:12px 14px;border-radius:14px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.18);}
   .status-label{font-size:11px;color:var(--muted);margin-bottom:4px;}
   .status-value{font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px;}
   .status-dot-live{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 8px #34d399;animation:liveBlink 1.6s ease-in-out infinite;}
@@ -7652,56 +7767,17 @@ function matrixEdgeAdminDashboard() {
   .usage-fill{height:100%;width:0;background:linear-gradient(90deg,var(--purple),var(--pink));border-radius:inherit;transition:width .5s;}
   .modal{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;background:rgba(3,1,8,.82);backdrop-filter:blur(5px);padding:20px;}
   .modal.hidden{display:none;}
-  .modal-card{max-width:430px;width:100%;padding:28px;border-radius:24px;background:linear-gradient(180deg,rgba(10,18,40,.96),rgba(5,10,24,.98));border:1px solid rgba(139,92,246,.38);box-shadow:0 30px 90px rgba(0,0,0,.55);text-align:center;}
+  .modal-card{max-width:430px;width:100%;padding:28px;border-radius:24px;background:linear-gradient(180deg,rgba(10,18,40,.96),rgba(5,10,24,.98));border:1px solid rgba(59,130,246,.38);box-shadow:0 30px 90px rgba(0,0,0,.55);text-align:center;}
   .tg-icon{font-size:44px;display:block;animation:floatIcon 3s ease-in-out infinite;}
   @keyframes floatIcon{50%{transform:translateY(-6px) rotate(3deg)}}
-  @media(max-width:700px){.hamb{display:inline-flex}.actions .danger{display:none}.usage-grid{grid-template-columns:1fr}.side{left:auto;right:0;transform:translateX(105%);border-right:0;border-left:1px solid rgba(139,92,246,.28)}.side.open{transform:translateX(0)}}
-  @media(max-width:700px){
-    .bg .orb{filter:blur(42px);animation:none;opacity:.36;}
-    .net-globe{opacity:.16;filter:none;}
-    .globe-rotate,.gdot,.garc{animation:none!important;}
-    header{backdrop-filter:none;-webkit-backdrop-filter:none;}
-    .card,.modal-card.glass{backdrop-filter:none;-webkit-backdrop-filter:none;box-shadow:0 10px 30px rgba(0,0,0,.28);}
-    .side{backdrop-filter:none;-webkit-backdrop-filter:none;}
-    .matix-update-progress-glow{animation:none;}
-  }
-  .subscription-limits{gap:14px;grid-template-columns:1fr!important;}
-  .limit-box{margin:0;padding:14px;border-radius:16px;background:linear-gradient(180deg,rgba(139,92,246,.10),rgba(255,255,255,.025));border:1px solid rgba(168,85,247,.34);box-shadow:inset 0 1px 0 rgba(255,255,255,.05);}
-  .limit-box label{font-weight:700;color:#ddd0ff;}
-  .limit-box input{font-size:18px;font-weight:800;text-align:center;background:rgba(5,2,12,.72);border-color:rgba(139,92,246,.55);color:#fff;caret-color:#fff;}
-  .limit-box input::selection{background:#7c3aed;color:#fff;}
-  .site-links{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 18px;}
-  .site-links a{transition:transform .18s,border-color .18s,background .18s;}
-  .site-links a:hover{transform:translateY(-2px);border-color:#c084fc!important;background:rgba(139,92,246,.18)!important;}
-  @media(max-width:760px){
-    header{padding:10px 12px;}
-    .actions{gap:6px;}
-    button.chip{min-height:36px;padding:7px 10px;}
-    .actions .danger{display:none;}
-    main{padding:14px 10px 58px;gap:12px;}
-    .card{border-radius:18px;padding:15px;box-shadow:0 10px 28px rgba(0,0,0,.28);content-visibility:auto;contain:layout paint;}
-    .card::before{animation:none;}
-    .bg::after{display:block;opacity:.55;animation-duration:26s;}
-    .bg::before{filter:blur(22px);animation-duration:42s;opacity:.72;}
-    .orb{filter:blur(28px);animation:none;opacity:.18;}
-    .net-globe{opacity:.14;width:125vw;height:125vw;}
-    .globe-rotate,.gdot,.garc{animation:none!important;}
-    .subscription-limits{grid-template-columns:1fr;}
-    .linkbox{flex-direction:column;}
-    .linkbox .copy{min-height:40px;}
-    .save-bar{position:sticky;bottom:8px;padding:8px;border-radius:16px;background:rgba(8,3,18,.92);border:1px solid rgba(139,92,246,.28);backdrop-filter:none;}
-    .save-bar button{flex:1;}
-    .splash-wrap{width:220px;min-height:140px;} .splash-bismillah{font-size:17px;margin-top:12px;}
-    .splash-loader{width:54px;height:54px;animation-duration:.9s;}
-  }
-  @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition-duration:.001ms!important;}}
+  @media(max-width:700px){.hamb{display:inline-flex}.actions .danger{display:none}.usage-grid{grid-template-columns:1fr}.side{left:auto;right:0;transform:translateX(105%);border-right:0;border-left:1px solid rgba(59,130,246,.28)}.side.open{transform:translateX(0)}}
   label{display:block; font-size:12.5px; color:var(--muted); margin-bottom:6px;}
   input[type=text], input[type=password], select, textarea{
     width:100%; padding:10px 12px; border-radius:10px; font-size:13.5px;
-    background:rgba(255,255,255,.04); border:1px solid rgba(139,92,246,.28); color:var(--text); outline:none;
+    background:rgba(255,255,255,.04); border:1px solid rgba(59,130,246,.28); color:var(--text); outline:none;
     font-family:inherit;
   }
-  input:focus, select:focus, textarea:focus{border-color:var(--purple-2); box-shadow:0 0 0 3px rgba(139,92,246,.18);}
+  input:focus, select:focus, textarea:focus{border-color:var(--purple-2); box-shadow:0 0 0 3px rgba(59,130,246,.18);}
   textarea{min-height:110px; resize:vertical; font-family:monospace; direction:ltr; text-align:left;}
   .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
   @media (max-width:560px){ .grid2{grid-template-columns:1fr;} }
@@ -7710,47 +7786,47 @@ function matrixEdgeAdminDashboard() {
 
   .linkbox{display:flex; gap:8px; align-items:stretch;}
   .linkbox input{flex:1; direction:ltr; text-align:left; font-family:monospace; font-size:12.5px;}
-  .copy{background:linear-gradient(90deg, #6d28d9, #8b5cf6); border:none; color:#fff; border-radius:10px;
+  .copy{background:linear-gradient(90deg, #1d4ed8, #3b82f6); border:none; color:#fff; border-radius:10px;
     padding:0 16px; font-size:12.5px; cursor:pointer; white-space:nowrap;}
   .copy:hover{filter:brightness(1.1);}
 
-  .matix-update-progress{display:none;margin-top:12px;padding:10px 12px;border:1px solid rgba(139,92,246,.34);border-radius:14px;background:rgba(124,58,237,.055);overflow:hidden;}
+  .matix-update-progress{display:none;margin-top:12px;padding:10px 12px;border:1px solid rgba(59,130,246,.22);border-radius:14px;background:rgba(37,99,235,.055);overflow:hidden;}
   .matix-update-progress.show{display:block;}
   .matix-update-progress-track{height:5px;border-radius:999px;background:rgba(148,163,184,.14);overflow:hidden;position:relative;}
-  .matix-update-progress-glow{width:38%;height:100%;border-radius:999px;background:linear-gradient(90deg,transparent,#d8b4fe,#a78bfa,#a78bfa,transparent);box-shadow:0 0 14px rgba(216,180,254,.65);animation:matixUpdateFlow 1.35s ease-in-out infinite;}
+  .matix-update-progress-glow{width:38%;height:100%;border-radius:999px;background:linear-gradient(90deg,transparent,#38bdf8,#60a5fa,#a78bfa,transparent);box-shadow:0 0 14px rgba(56,189,248,.65);animation:matixUpdateFlow 1.35s ease-in-out infinite;}
   .matix-update-progress-label{margin-top:7px;font-size:12px;color:var(--muted);text-align:center;}
   @keyframes matixUpdateFlow{0%{transform:translateX(-130%)}100%{transform:translateX(360%)}}
 
   .save-bar{position:sticky; bottom:0; z-index:3; display:flex; justify-content:flex-end; gap:10px; padding:14px 0 0;}
-  button.primary{background:linear-gradient(90deg, #6d28d9, #8b5cf6, #a855f7); background-size:200% 100%;
+  button.primary{background:linear-gradient(90deg, #1d4ed8, #3b82f6, #0891b2); background-size:200% 100%;
     border:none; color:#fff; font-weight:700; font-size:13.5px; padding:11px 22px; border-radius:12px; cursor:pointer;
-    box-shadow:0 8px 24px -6px rgba(124,58,237,.6); transition:background-position .3s;}
+    box-shadow:0 8px 24px -6px rgba(37,99,235,.6); transition:background-position .3s;}
   button.primary:hover{background-position:100% 0;}
   button.primary:disabled{opacity:.55; cursor:not-allowed;}
-  button.ghost{background:rgba(255,255,255,.05); border:1px solid rgba(139,92,246,.3); color:var(--text);
+  button.ghost{background:rgba(255,255,255,.05); border:1px solid rgba(59,130,246,.3); color:var(--text);
     font-size:13.5px; padding:11px 18px; border-radius:12px; cursor:pointer;}
 
   .toast{position:fixed; bottom:20px; left:50%; transform:translateX(-50%) translateY(20px); z-index:50;
-    background:rgba(15,8,30,.95); border:1px solid rgba(139,92,246,.4); color:#fff; padding:11px 20px; border-radius:12px;
+    background:rgba(15,8,30,.95); border:1px solid rgba(59,130,246,.4); color:#fff; padding:11px 20px; border-radius:12px;
     font-size:13px; opacity:0; pointer-events:none; transition:all .25s; box-shadow:0 10px 30px -8px rgba(0,0,0,.6);}
   .toast.show{opacity:1; transform:translateX(-50%) translateY(0);}
   .toast.err{border-color:rgba(248,113,113,.5);}
 
   .loglist{max-height:340px; overflow:auto; direction:ltr; text-align:left; color:var(--muted); perspective:900px; padding-right:4px;}
-  .loglist::-webkit-scrollbar{width:6px;} .loglist::-webkit-scrollbar-thumb{background:rgba(139,92,246,.4);border-radius:99px;}
+  .loglist::-webkit-scrollbar{width:6px;} .loglist::-webkit-scrollbar-thumb{background:rgba(59,130,246,.4);border-radius:99px;}
   .log-row{position:relative; display:flex; align-items:center; gap:12px; padding:11px 14px; margin-bottom:8px;
-    border-radius:14px; background:linear-gradient(135deg, rgba(139,92,246,.08), rgba(8,14,32,.55));
-    border:1px solid rgba(139,92,246,.34); border-left:3px solid var(--log-color, #8b5cf6);
+    border-radius:14px; background:linear-gradient(135deg, rgba(59,130,246,.08), rgba(8,14,32,.55));
+    border:1px solid rgba(59,130,246,.22); border-left:3px solid var(--log-color, #3b82f6);
     transition:transform .2s ease, border-color .2s, box-shadow .2s; transform-style:preserve-3d;
     animation:logRowIn .35s ease both;}
-  .log-row:hover{transform:translateZ(8px) translateX(2px) rotateX(2deg); border-color:rgba(139,92,246,.5);
-    box-shadow:0 10px 26px -10px rgba(124,58,237,.55), 0 0 0 1px rgba(139,92,246,.25);}
+  .log-row:hover{transform:translateZ(8px) translateX(2px) rotateX(2deg); border-color:rgba(59,130,246,.5);
+    box-shadow:0 10px 26px -10px rgba(37,99,235,.55), 0 0 0 1px rgba(59,130,246,.25);}
   @keyframes logRowIn{from{opacity:0; transform:translateY(6px)} to{opacity:1; transform:translateY(0)}}
   .log-icon{flex:0 0 auto; width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center;
-    background:rgba(139,92,246,.14); font-size:15px; box-shadow:0 0 10px rgba(139,92,246,.25);}
+    background:rgba(59,130,246,.14); font-size:15px; box-shadow:0 0 10px rgba(59,130,246,.25);}
   .log-body{flex:1; min-width:0;}
   .log-top{display:flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:var(--text);}
-  .log-type{color:var(--log-color, #8b5cf6);}
+  .log-type{color:var(--log-color, #3b82f6);}
   .log-time{margin-left:auto; font-size:10.5px; color:var(--muted); font-family:monospace;}
   .log-meta{margin-top:3px; font-size:11px; color:var(--muted); font-family:monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
   .loglist div{padding:6px 0; border-bottom:1px solid rgba(255,255,255,.05);}
@@ -7761,12 +7837,23 @@ function matrixEdgeAdminDashboard() {
   html[data-lang="en"] [data-fa]{display:none;}
   html[data-lang="en"] [data-en]{display:inline;}
 
-  .splash{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;background:#030207;transition:opacity .35s ease,visibility .35s;}
+  .splash{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;flex-direction:column;background:radial-gradient(circle at 50% 30%, #1a0b3a 0%, #05010c 70%);transition:opacity .6s ease, visibility .6s;}
   .splash.hide{opacity:0;visibility:hidden;pointer-events:none;}
-  .splash-wrap{position:relative;width:220px;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#a855f7;filter:drop-shadow(0 0 14px rgba(168,85,247,.42));}
-  .splash-loader{width:92px;height:92px;display:block;} .splash-bismillah{margin-top:18px;font-size:20px;font-weight:800;letter-spacing:.02em;color:#fff;text-shadow:0 0 12px rgba(168,85,247,.55),0 0 28px rgba(168,85,247,.28);animation:splash-text-in 1.2s ease both,splash-text-glow 2.4s ease-in-out infinite;} .splash-bismillah::after{content:"";display:block;width:54px;height:2px;margin:10px auto 0;border-radius:99px;background:linear-gradient(90deg,transparent,#a855f7,transparent);animation:splash-line 1.8s ease-in-out infinite;} @keyframes splash-text-in{from{opacity:0;transform:translateY(8px);filter:blur(4px)}to{opacity:1;transform:translateY(0);filter:blur(0)}} @keyframes splash-text-glow{0%,100%{opacity:.82;text-shadow:0 0 10px rgba(168,85,247,.35),0 0 24px rgba(168,85,247,.18)}50%{opacity:1;text-shadow:0 0 16px rgba(168,85,247,.75),0 0 38px rgba(168,85,247,.38)}} @keyframes splash-line{0%,100%{transform:scaleX(.55);opacity:.45}50%{transform:scaleX(1);opacity:1}}
-  .splash-loader path{stroke:currentColor;stroke-width:10;stroke-linecap:round;stroke-dasharray:205.271142578125 51.317785644531256;transform:scale(.8);transform-origin:50px 50px;animation:loading-ui-infinity-dash 2s linear infinite;}
-  @keyframes loading-ui-infinity-dash{to{stroke-dashoffset:256.58892822265625}}
+  .splash-wrap{position:relative;width:150px;height:150px;display:flex;align-items:center;justify-content:center;}
+  .splash-ring{position:absolute;border-radius:50%;border:3px solid transparent;}
+  .splash-ring.r1{width:150px;height:150px;border-top-color:var(--purple-2);border-right-color:var(--pink);animation:spin 1.4s linear infinite;}
+  .splash-ring.r2{width:110px;height:110px;border-bottom-color:#22d3ee;border-left-color:var(--purple);animation:spin 1.8s linear infinite reverse;}
+  .splash-ring.r3{width:75px;height:75px;border-top-color:var(--pink);border-left-color:var(--purple-2);animation:spin 1s linear infinite;}
+  .splash-core{width:52px;height:52px;border-radius:50%;background:url(${MATIX_LOGO}) center/cover no-repeat, #05010c;box-shadow:0 0 24px rgba(59,130,246,.85);animation:pulseCore 1.6s ease-in-out infinite;}
+  @keyframes pulseCore{0%,100%{transform:scale(1)}50%{transform:scale(1.18)}}
+  .splash-bismillah{margin-top:26px;font-size:19px;font-weight:700;letter-spacing:.5px;color:#93c5fd;opacity:.95;text-shadow:0 0 18px rgba(59,130,246,.85), 0 0 36px rgba(34,211,238,.4);animation:fadeUpDown 2.4s ease-in-out infinite;}
+  @keyframes fadeUpDown{0%,100%{opacity:.55;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+  .splash-brand{margin-top:10px;font-weight:800;font-size:20px;background:linear-gradient(90deg,#fff,var(--purple-2));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .splash-bar{margin-top:18px;width:150px;height:4px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;}
+  .splash-bar-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--purple),var(--pink),var(--purple-2));border-radius:inherit;animation:barFill 1.3s ease forwards;}
+  .splash-status{margin-top:12px;font-size:11.5px;font-family:monospace;color:#93c5fd;opacity:.75;letter-spacing:.3px;min-height:16px;}
+  @keyframes barFill{to{width:100%}}
+
   .modal-card.glass{background:linear-gradient(135deg, rgba(14,24,48,.7), rgba(5,10,24,.78));backdrop-filter:blur(10px) saturate(140%);-webkit-backdrop-filter:blur(10px) saturate(140%);border:1px solid rgba(255,255,255,.18);border-radius:32px;box-shadow:0 30px 90px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.15);}
   .social-row{display:flex;gap:10px;margin-top:18px;}
   .social-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 6px;border-radius:18px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:var(--text);text-decoration:none;cursor:pointer;transition:.2s;}
@@ -7777,13 +7864,13 @@ function matrixEdgeAdminDashboard() {
   @keyframes wave{0%,60%,100%{transform:rotate(0deg)}10%,30%{transform:rotate(14deg)}20%{transform:rotate(-8deg)}40%{transform:rotate(10deg)}50%{transform:rotate(-4deg)}}
 
   .panel-frame{position:fixed;inset:0;z-index:900;pointer-events:none;
-    border:1px solid rgba(139,92,246,.4);
-    box-shadow:inset 0 0 50px rgba(124,58,237,.18), inset 0 0 0 1px rgba(139,92,246,.12);}
+    border:1px solid rgba(59,130,246,.4);
+    box-shadow:inset 0 0 50px rgba(37,99,235,.18), inset 0 0 0 1px rgba(59,130,246,.12);}
   .panel-frame::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
-    background:linear-gradient(90deg, transparent, #8b5cf6, #c084fc, transparent);
+    background:linear-gradient(90deg, transparent, #3b82f6, #22d3ee, transparent);
     animation:scanX 7s linear infinite;}
   .panel-frame::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
-    background:linear-gradient(90deg, transparent, #c084fc, #8b5cf6, transparent);
+    background:linear-gradient(90deg, transparent, #22d3ee, #3b82f6, transparent);
     animation:scanX 7s linear infinite reverse;}
   @keyframes scanX{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
 
@@ -7804,18 +7891,21 @@ function matrixEdgeAdminDashboard() {
   @media (prefers-reduced-motion: reduce){
     *, *::before, *::after{animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important;}
   }
-</style>
+${MX_CSS_COMMON}${MX_CSS_DASH}</style>
 </head>
-<body>
+<body class="mx">
   <div class="panel-frame"></div>
   <div class="splash" id="splash">
-    <div class="splash-wrap" aria-label="به نام پروردگار" role="status">
-      <svg class="splash-loader" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-        <title>Loading</title>
-        <path d="M24.3 30C11.4 30 5 43.3 5 50s6.4 20 19.3 20c19.3 0 32.1-40 51.4-40C88.6 30 95 43.3 95 50s-6.4 20-19.3 20C56.4 70 43.6 30 24.3 30z"/>
-      </svg>
-      <div class="splash-bismillah" aria-label="به نام پروردگار">به نام پروردگار</div>
+    <div class="splash-wrap">
+      <div class="splash-ring r1"></div>
+      <div class="splash-ring r2"></div>
+      <div class="splash-ring r3"></div>
+      <div class="splash-core"></div>
     </div>
+    <div class="splash-bismillah">به نام پروردگار</div>
+    <div class="splash-brand">MatiX <span style="opacity:.6">Edge</span></div>
+    <div class="splash-bar"><div class="splash-bar-fill"></div></div>
+    <div class="splash-status" id="splashStatus">Initializing…</div>
   </div>
 
   <div class="bg"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div><div class="orb orb4"></div></div>
@@ -7823,32 +7913,32 @@ function matrixEdgeAdminDashboard() {
     <svg viewBox="0 0 400 400" class="globe-svg">
       <defs>
         <radialGradient id="globeGlow" cx="50%" cy="45%" r="60%">
-          <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.22"/>
-          <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+          <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.22"/>
+          <stop offset="100%" stop-color="#3b82f6" stop-opacity="0"/>
         </radialGradient>
       </defs>
       <circle cx="200" cy="200" r="150" fill="url(#globeGlow)"/>
-      <circle cx="200" cy="200" r="150" fill="none" stroke="#8b5cf6" stroke-opacity="0.35" stroke-width="1.5"/>
+      <circle cx="200" cy="200" r="150" fill="none" stroke="#3b82f6" stroke-opacity="0.35" stroke-width="1.5"/>
       <g class="globe-rotate">
-        <ellipse cx="200" cy="200" rx="150" ry="40" fill="none" stroke="#8b5cf6" stroke-opacity="0.28" stroke-width="1"/>
-        <ellipse cx="200" cy="200" rx="150" ry="90" fill="none" stroke="#8b5cf6" stroke-opacity="0.22" stroke-width="1"/>
-        <ellipse cx="200" cy="200" rx="40" ry="150" fill="none" stroke="#c084fc" stroke-opacity="0.28" stroke-width="1"/>
-        <ellipse cx="200" cy="200" rx="90" ry="150" fill="none" stroke="#c084fc" stroke-opacity="0.22" stroke-width="1"/>
+        <ellipse cx="200" cy="200" rx="150" ry="40" fill="none" stroke="#3b82f6" stroke-opacity="0.28" stroke-width="1"/>
+        <ellipse cx="200" cy="200" rx="150" ry="90" fill="none" stroke="#3b82f6" stroke-opacity="0.22" stroke-width="1"/>
+        <ellipse cx="200" cy="200" rx="40" ry="150" fill="none" stroke="#22d3ee" stroke-opacity="0.28" stroke-width="1"/>
+        <ellipse cx="200" cy="200" rx="90" ry="150" fill="none" stroke="#22d3ee" stroke-opacity="0.22" stroke-width="1"/>
       </g>
-      <circle class="gdot d1" cx="120" cy="140" r="4" fill="#c084fc"/>
-      <circle class="gdot d2" cx="270" cy="110" r="4" fill="#8b5cf6"/>
-      <circle class="gdot d3" cx="300" cy="230" r="4" fill="#c084fc"/>
-      <circle class="gdot d4" cx="150" cy="280" r="4" fill="#8b5cf6"/>
-      <circle class="gdot d5" cx="220" cy="320" r="4" fill="#c084fc"/>
-      <path class="garc a1" d="M120,140 Q200,100 270,110" fill="none" stroke="#8b5cf6" stroke-opacity="0.4" stroke-width="1"/>
-      <path class="garc a2" d="M270,110 Q320,170 300,230" fill="none" stroke="#c084fc" stroke-opacity="0.4" stroke-width="1"/>
-      <path class="garc a3" d="M300,230 Q250,270 220,320" fill="none" stroke="#8b5cf6" stroke-opacity="0.4" stroke-width="1"/>
-      <path class="garc a4" d="M150,280 Q100,220 120,140" fill="none" stroke="#c084fc" stroke-opacity="0.4" stroke-width="1"/>
+      <circle class="gdot d1" cx="120" cy="140" r="4" fill="#22d3ee"/>
+      <circle class="gdot d2" cx="270" cy="110" r="4" fill="#3b82f6"/>
+      <circle class="gdot d3" cx="300" cy="230" r="4" fill="#22d3ee"/>
+      <circle class="gdot d4" cx="150" cy="280" r="4" fill="#3b82f6"/>
+      <circle class="gdot d5" cx="220" cy="320" r="4" fill="#22d3ee"/>
+      <path class="garc a1" d="M120,140 Q200,100 270,110" fill="none" stroke="#3b82f6" stroke-opacity="0.4" stroke-width="1"/>
+      <path class="garc a2" d="M270,110 Q320,170 300,230" fill="none" stroke="#22d3ee" stroke-opacity="0.4" stroke-width="1"/>
+      <path class="garc a3" d="M300,230 Q250,270 220,320" fill="none" stroke="#3b82f6" stroke-opacity="0.4" stroke-width="1"/>
+      <path class="garc a4" d="M150,280 Q100,220 120,140" fill="none" stroke="#22d3ee" stroke-opacity="0.4" stroke-width="1"/>
     </svg>
   </div>
 
   <header>
-    <div class="brand"><button class="hamb" id="hamb">☰</button><div class="logo"></div><div class="brand-name" aria-hidden="true"></div></div>
+    <div class="brand"><button class="hamb" id="hamb">☰</button><div class="logo"></div><div class="brand-name">MatiX <span style="font-weight:600;opacity:.65;font-size:13px">Edge</span></div></div>
     <div class="actions">
       <button class="chip theme-toggle" id="themeBtn" title="Theme">
         <svg class="icon-moon" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
@@ -7860,16 +7950,18 @@ function matrixEdgeAdminDashboard() {
     </div>
   </header>
   <aside class="side" id="side">
+    <div class="side-brand"><div class="logo"></div><span>MatiX <small>Edge</small></span></div>
+    <div class="side-sec"><span data-fa>منو</span><span data-en>Menu</span></div>
     <a href="#overview"><span class="icon">🏠</span><span data-fa>نمای کلی</span><span data-en>Overview</span></a>
     <a href="#basic-settings"><span class="icon">⚙️</span><span data-fa>تنظیمات پایه</span><span data-en>Basic settings</span></a>
     <a href="#usage"><span class="icon">📊</span><span data-fa>نمودار مصرف</span><span data-en>Usage chart</span></a>
     <a href="#subscription"><span class="icon">⏳</span><span data-fa>روز و حجم</span><span data-en>Days & volume</span></a>
-    <a href="#ip-source"><span class="icon">🌐</span><span data-fa>منبع IP</span><span data-en>IP source</span></a>
     <a href="#proxy-settings"><span class="icon">🛡️</span><span data-fa>پروکسی</span><span data-en>Proxy</span></a>
     <a href="#ip-list"><span class="icon">📋</span><span data-fa>لیست IP دلخواه</span><span data-en>Custom IP list</span></a>
     <a href="#tg-bot"><span class="icon">🤖</span><span data-fa>ربات تلگرام</span><span data-en>Telegram bot</span></a>
     <a href="#panel-update"><span class="icon">🚀</span><span data-fa>به‌روزرسانی پنل</span><span data-en>Panel update</span></a>
     <a href="#logs"><span class="icon">🧾</span><span data-fa>لاگ‌های اخیر</span><span data-en>Recent logs</span></a>
+    <div class="side-sec"><span data-fa>لینک‌ها</span><span data-en>Links</span></div>
     <a href="https://github.com/imatixofficel/Matix-edg" target="_blank"><span class="icon">💻</span>GitHub</a>
     <a href="https://t.me/Imatix7" target="_blank"><span class="icon">✈️</span><span data-fa>کانال تلگرام</span><span data-en>Telegram channel</span></a>
     <a href="https://www.youtube.com/@i.matix7" target="_blank"><span class="icon">▶️</span><span data-fa>یوتیوب</span><span data-en>YouTube</span></a>
@@ -7947,12 +8039,12 @@ function matrixEdgeAdminDashboard() {
     <div class="card" id="subscription">
       <h2><span class="dot"></span><span class="icon">⏳</span><span data-fa>محدودیت اشتراک</span><span data-en>Subscription limits</span></h2>
       <p class="muted"><span data-fa>مدت اعتبار و سقف حجم اشتراک از این بخش تنظیم می‌شود. مقدار حجم در اطلاعات استاندارد اشتراک نیز درج خواهد شد.</span><span data-en>Set the subscription validity period and advertised traffic limit here.</span></p>
-      <div class="grid2 subscription-limits">
-        <div class="limit-box field">
+      <div class="grid2">
+        <div class="field">
           <label><span data-fa>اعتبار (روز)</span><span data-en>Validity (days)</span></label>
           <input type="number" id="f_limit_days" min="1" max="3650" step="1" value="30">
         </div>
-        <div class="limit-box field">
+        <div class="field">
           <label><span data-fa>حجم (گیگابایت)</span><span data-en>Traffic (GB)</span></label>
           <input type="number" id="f_limit_gb" min="0" max="100000" step="1" value="100">
         </div>
@@ -8006,13 +8098,24 @@ function matrixEdgeAdminDashboard() {
       <label class="chk"><input type="checkbox" id="f_socks_global"><span data-fa>مسیریابی همه‌ی ترافیک از این پروکسی (سراسری)</span><span data-en>Route all traffic through this proxy (global)</span></label>
     </div>
 
-    <div class="card" id="ip-list">
+    <div class="card wide" id="ip-list">
       <h2><span class="dot"></span><span class="icon">📋</span><span data-fa>لیست IP دلخواه</span><span data-en>Custom preferred IPs</span></h2>
-      <p class="muted"><span data-fa>هر خط یک IP یا دامنه (با پورت اختیاری، مثال: 1.2.3.4:443#remark) — خالی گذاشتنش لیست فعلی رو دست‌نخورده نگه می‌داره</span><span data-en>One IP or domain per line (optional port, e.g. 1.2.3.4:443#remark) — leaving this empty keeps the current list untouched</span></p>
-      <textarea id="f_addlist" placeholder="1.2.3.4:443#NL&#10;5.6.7.8:2053#DE"></textarea>
+      <p class="muted"><span data-fa>هر خط یک IP یا دامنه (پورت اختیاری، مثال: 1.2.3.4:443#remark). هر چه اینجا بنویسی و «ذخیره تغییرات» بزنی، مستقیم روی ساب‌اسکریپشن اعمال می‌شود. اگر لیست خالی باشد، IPهای خودکار استفاده می‌شوند.</span><span data-en>One IP or domain per line (optional port, e.g. 1.2.3.4:443#remark). Whatever you put here is applied to the subscription once you press Save. Leave it empty to use automatic IPs.</span></p>
+      <div class="iplist-grid">
+        <textarea id="f_addlist" placeholder="1.2.3.4:443#NL&#10;5.6.7.8:2053#DE"></textarea>
+        <div class="iplist-side">
+          <div class="field">
+            <label><span data-fa>آدرس مخزن IP</span><span data-en>IP repository URL</span></label>
+            <input type="text" id="f_ip_source" placeholder="https://raw.githubusercontent.com/.../list.json">
+          </div>
+          <button type="button" class="primary" id="fetchIpsBtn"><span data-fa>دریافت IP از مخزن</span><span data-en>Fetch IPs from repository</span></button>
+          <button type="button" class="ghost" id="clearIpsBtn"><span data-fa>پاک کردن لیست</span><span data-en>Clear list</span></button>
+          <div class="iplist-count" id="ipCount">—</div>
+        </div>
+      </div>
     </div>
 
-    <div class="card" id="usage">
+    <div class="card wide" id="usage">
       <h2><span class="dot"></span><span class="icon">📊</span><span data-fa>نمودار مصرف</span><span data-en>Usage chart</span></h2>
       <div class="usage-grid">
         <div class="usage-stat">
@@ -8026,15 +8129,6 @@ function matrixEdgeAdminDashboard() {
           <div style="font-size:24px;font-weight:800;margin-top:5px" id="quotaTotal">—</div>
           <div class="muted" id="expireMeta">—</div>
         </div>
-      </div>
-    </div>
-
-    <div class="card" id="ip-source">
-      <h2><span class="dot"></span><span class="icon">🌐</span><span data-fa>منبع IPهای منتخب</span><span data-en>Preferred IP source</span></h2>
-      <p class="muted"><span data-fa>این منبع رایگان GitHub برای تهیه فهرست IP استفاده می‌شود. اگر خالی باشد، منبع داخلی پروژه استفاده خواهد شد.</span><span data-en>A free GitHub source can provide the preferred IP list. Leave empty to use the project's built-in source.</span></p>
-      <div class="field">
-        <label><span data-fa>آدرس منبع</span><span data-en>Source URL</span></label>
-        <input type="text" id="f_ip_source" placeholder="https://raw.githubusercontent.com/.../list.json">
       </div>
     </div>
 
@@ -8102,16 +8196,10 @@ function matrixEdgeAdminDashboard() {
       <div class="loglist skel" id="logBox">…</div>
     </div>
 
-    <div class="muted site-links">
-      <a href="https://t.me/Imatix7" target="_blank" rel="noopener" aria-label="Telegram" title="Telegram" style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;color:#c084fc;background:rgba(192,132,252,.09);border:1px solid rgba(192,132,252,.28);text-decoration:none">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M21.6 3.2 18.3 20c-.25 1.18-.9 1.47-1.82.92l-5.02-3.7-2.42 2.33c-.27.27-.5.5-1.03.5l.37-5.1 9.28-8.38c.4-.36-.09-.56-.62-.2L5.56 13.6.64 12.06c-1.07-.34-1.09-1.07.22-1.58L20.08 3.1c.9-.33 1.69.22 1.52.1Z"/></svg>
-      </a>
-      <a href="https://github.com/imatixofficel/Matix-edg" target="_blank" rel="noopener" aria-label="GitHub" title="GitHub" style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;color:#c084fc;background:rgba(192,132,252,.09);border:1px solid rgba(192,132,252,.28);text-decoration:none">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M12 2.4a9.6 9.6 0 0 0-3.04 18.7c.48.09.66-.2.66-.46v-1.67c-2.7.59-3.27-1.15-3.27-1.15-.44-1.12-1.08-1.42-1.08-1.42-.88-.6.07-.59.07-.59.97.07 1.48 1 1.48 1 .86 1.47 2.25 1.05 2.8.8.09-.62.34-1.05.61-1.29-2.15-.24-4.41-1.08-4.41-4.79 0-1.06.38-1.93 1-2.61-.1-.24-.43-1.24.1-2.58 0 0 .82-.26 2.64 1a9.1 9.1 0 0 1 4.8 0c1.82-1.24 2.64-1 2.64-1 .53 1.34.2 2.34.1 2.58.62.68 1 1.55 1 2.61 0 3.72-2.27 4.55-4.43 4.78.35.3.66.88.66 1.78v2.64c0 .26.18.56.67.46A9.6 9.6 0 0 0 12 2.4Z"/></svg>
-      </a>
-      <a href="https://www.youtube.com/@i.matix7" target="_blank" rel="noopener" aria-label="YouTube" title="YouTube" style="display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:12px;color:#c084fc;background:rgba(192,132,252,.09);border:1px solid rgba(192,132,252,.28);text-decoration:none">
-        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M23.5 6.2a3.02 3.02 0 0 0-2.12-2.14C19.51 3.55 12 3.55 12 3.55s-7.51 0-9.38.51A3.02 3.02 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3.02 3.02 0 0 0 2.12 2.14c1.87.51 9.38.51 9.38.51s7.51 0 9.38-.51a3.02 3.02 0 0 0 2.12-2.14A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8ZM9.55 15.6V8.4L15.82 12l-6.27 3.6Z"/></svg>
-      </a>
+    <div class="muted" style="text-align:center;margin:8px 0 18px">
+      <a href="https://t.me/Imatix7" target="_blank" style="color:#93c5fd;text-decoration:none">✈️ @Imatix7</a> · 
+      <a href="https://github.com/imatixofficel/Matix-edg" target="_blank" style="color:#93c5fd;text-decoration:none">GitHub / imatixofficel/Matix-edg</a> · 
+      <a href="https://www.youtube.com/@i.matix7" target="_blank" style="color:#93c5fd;text-decoration:none">▶️ YouTube</a>
     </div>
 
     <div class="save-bar">
@@ -8176,7 +8264,7 @@ function matrixEdgeAdminDashboard() {
     sunIcon.style.display = t === 'light' ? 'inline-block' : 'none';
     localStorage.setItem('me_theme', t);
   }
-  setTheme(localStorage.getItem('me_theme') || 'dark');
+  setTheme(localStorage.getItem('me_theme') || 'light');
   themeBtn.onclick = () => {
     setTheme(root.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
     themeBtn.animate([{ transform: 'scale(1) rotate(0deg)' }, { transform: 'scale(1.25) rotate(180deg)' }, { transform: 'scale(1) rotate(360deg)' }], { duration: 500, easing: 'ease' });
@@ -8245,9 +8333,8 @@ function matrixEdgeAdminDashboard() {
     if (s.accountId) document.getElementById('f_update_account').value = s.accountId;
     if (s.d1Id) document.getElementById('f_update_kvid').value = s.d1Id;
     if (s.workerName) document.getElementById('f_update_workername').value = s.workerName;
-    if (s.updateSha256) { const el = document.getElementById('updateStatus'); if (el) el.textContent = 'UPDATE_SHA256: ' + s.updateSha256; }
     if (s.hasToken) document.getElementById('f_update_token').placeholder = faOn() ? 'قبلاً ذخیره شده (برای تغییر بازنویسی کن)' : 'Already saved (overwrite to change)';
-  }).catch(() => { toast(faOn() ? 'خطا در دریافت تنظیمات بروزرسانی' : 'Failed to load update settings', true); });
+  }).catch(() => {});
 
   document.getElementById('saveUpdateSettingsBtn').onclick = async () => {
     const cfToken = document.getElementById('f_update_token').value.trim();
@@ -8298,6 +8385,14 @@ function matrixEdgeAdminDashboard() {
   document.getElementById('hamb').onclick = () => { side.classList.add('open'); backdrop.classList.add('show'); };
   backdrop.onclick = () => { side.classList.remove('open'); backdrop.classList.remove('show'); };
   side.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { side.classList.remove('open'); backdrop.classList.remove('show'); }));
+  const navLinks = Array.from(side.querySelectorAll('a[href^="#"]'));
+  function setActiveNav(id){ navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#' + id)); }
+  navLinks.forEach(a => a.addEventListener('click', () => setActiveNav(a.getAttribute('href').slice(1))));
+  if ('IntersectionObserver' in window) {
+    const navObs = new IntersectionObserver(es => { es.forEach(e => { if (e.isIntersecting) setActiveNav(e.target.id); }); }, { rootMargin: '-15% 0px -70% 0px' });
+    navLinks.forEach(a => { const t = document.getElementById(a.getAttribute('href').slice(1)); if (t) navObs.observe(t); });
+  }
+  setActiveNav('overview');
   const welcome = document.getElementById('welcomeModal');
   if (!localStorage.getItem('matix_tg_welcome')) { welcome.classList.remove('hidden'); setTimeout(playNotify, 300); }
   else welcome.classList.add('hidden');
@@ -8323,20 +8418,10 @@ function matrixEdgeAdminDashboard() {
     document.getElementById('expireMeta').textContent = (faOn() ? 'اعتبار: ' : 'Validity: ') + days + (faOn() ? ' روز' : ' days');
   }
 
-  async function fetchDashboard(url, options = {}, timeoutMs = 8000){
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-    try {
-      return await fetch(url, { ...options, signal: controller.signal, cache: 'no-store' });
-    } finally {
-      clearTimeout(timer);
-    }
-  }
-
   async function loadConfig(){
     try{
       const pingStart = performance.now();
-      const res = await fetchDashboard('/admin/config.json', { credentials: 'same-origin' }, 7000);
+      const res = await fetch('/admin/config.json', { credentials: 'same-origin' });
       const pingMs = Math.round(performance.now() - pingStart);
       if (!res.ok) throw new Error('load failed');
       const c = await res.json();
@@ -8346,7 +8431,7 @@ function matrixEdgeAdminDashboard() {
       const usage = c.CF?.Usage;
       const statUsageEl = document.getElementById('statUsage');
       if (statUsageEl) statUsageEl.textContent = (usage && usage.success) ? (usage.total + ' / ' + usage.max) : (faOn() ? 'در دسترس نیست' : 'N/A');
-      fetchDashboard('/admin/cf.json', { credentials: 'same-origin' }, 4000).then(r => r.json()).then(cf => {
+      fetch('/admin/cf.json', { credentials: 'same-origin' }).then(r => r.json()).then(cf => {
         const statColoEl = document.getElementById('statColo');
         if (statColoEl) statColoEl.textContent = (cf && cf.colo) ? cf.colo : 'N/A';
       }).catch(() => { const el = document.getElementById('statColo'); if (el) el.textContent = 'N/A'; });
@@ -8380,19 +8465,57 @@ function matrixEdgeAdminDashboard() {
     }catch(e){ toast(faOn() ? 'خطا در بارگذاری تنظیمات' : 'Failed to load settings', true); }
   }
 
-  async function loadAddList(){
-    // The server returns auto-generated random IPs when no manual list has been
-    // saved yet, so we can't reliably tell "auto" apart from "manual, happens to
-    // match". We leave this field blank on load — saving it (even empty) simply
-    // keeps whatever you type; leaving it untouched keeps the automatic IPs.
-    document.getElementById('f_addlist').value = '';
+  let addListLoaded = false;
+  const NL = String.fromCharCode(10);
+  function updateIpCount(){
+    const n = document.getElementById('f_addlist').value.split(NL).map(s => s.trim()).filter(Boolean).length;
+    document.getElementById('ipCount').textContent = n ? (faOn() ? (n + ' آی‌پی در لیست') : (n + ' IPs in list')) : (faOn() ? 'لیست خالی است — IP خودکار' : 'Empty — automatic IPs');
   }
+  async function loadAddList(){
+    try{
+      const res = await fetch('/admin/ADD.txt?saved=1', { credentials: 'same-origin' });
+      if (res.ok) { document.getElementById('f_addlist').value = await res.text(); addListLoaded = true; }
+    }catch(e){}
+    updateIpCount();
+  }
+  async function saveAddList(){
+    const res = await fetch('/admin/ADD.txt', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: document.getElementById('f_addlist').value.trim()
+    });
+    if (!res.ok) throw new Error('save list failed');
+  }
+  document.getElementById('f_addlist').addEventListener('input', updateIpCount);
+  document.getElementById('clearIpsBtn').onclick = () => { document.getElementById('f_addlist').value = ''; updateIpCount(); toast(faOn() ? 'لیست پاک شد — برای اعمال، ذخیره تغییرات را بزن' : 'List cleared — press Save to apply'); };
+  document.getElementById('fetchIpsBtn').onclick = async () => {
+    const btn = document.getElementById('fetchIpsBtn');
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.textContent = faOn() ? 'در حال دریافت…' : 'Fetching…';
+    try{
+      const src = document.getElementById('f_ip_source').value.trim();
+      const res = await fetch('/admin/fetch-ips?n=50&src=' + encodeURIComponent(src), { credentials: 'same-origin' });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || !data.ips || !data.ips.length) throw new Error(data.error || 'empty');
+      document.getElementById('f_addlist').value = data.ips.join(NL);
+      await saveAddList();
+      addListLoaded = true;
+      updateIpCount();
+      toast(faOn() ? (data.ips.length + ' آی‌پی از مخزن گرفته و روی ساب‌اسکریپشن اعمال شد') : (data.ips.length + ' IPs fetched and applied to the subscription'));
+    }catch(e){
+      toast((faOn() ? 'دریافت از مخزن ناموفق بود: ' : 'Fetch failed: ') + (e && e.message ? e.message : ''), true);
+    }finally{
+      btn.disabled = false;
+      btn.innerHTML = original;
+    }
+  };
 
   const LOG_ICONS = {
-    Get_SUB: ['📥', '#8b5cf6'], Admin_Login: ['🔐', '#c084fc'], Save_Config: ['💾', '#34d399'],
-    Reset_Config: ['🔄', '#f87171'], Admin_Panel: ['🛠️', '#8b5cf6']
+    Get_SUB: ['📥', '#3b82f6'], Admin_Login: ['🔐', '#22d3ee'], Save_Config: ['💾', '#34d399'],
+    Reset_Config: ['🔄', '#f87171'], Admin_Panel: ['🛠️', '#3b82f6']
   };
-  function logIconFor(type) { return LOG_ICONS[type] || ['📡', '#8b5cf6']; }
+  function logIconFor(type) { return LOG_ICONS[type] || ['📡', '#3b82f6']; }
   async function loadLogs(){
     const box = document.getElementById('logBox');
     try{
@@ -8401,7 +8524,7 @@ function matrixEdgeAdminDashboard() {
       box.classList.remove('skel');
       if (Array.isArray(logs) && logs.length) {
         box.innerHTML = logs.slice(-30).reverse().map(l => {
-          if (typeof l !== 'object' || l === null) return '<div class="log-row" style="--log-color:#8b5cf6"><div class="log-body">' + String(l) + '</div></div>';
+          if (typeof l !== 'object' || l === null) return '<div class="log-row" style="--log-color:#3b82f6"><div class="log-body">' + String(l) + '</div></div>';
           const [icon, color] = logIconFor(l.TYPE);
           const time = l.TIME ? new Date(l.TIME).toLocaleString(faOn() ? 'en-GB' : 'en-GB', { timeZone: 'Asia/Tehran' }) : '';
           const ua = (l.UA || '').slice(0, 60);
@@ -8476,7 +8599,7 @@ function matrixEdgeAdminDashboard() {
       if (!res.ok) throw new Error('save failed');
 
       const addlistVal = document.getElementById('f_addlist').value;
-      if (addlistVal.trim()) {
+      if (addListLoaded) {
         await fetch('/admin/ADD.txt', {
           method: 'POST', credentials: 'same-origin',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -8493,8 +8616,7 @@ function matrixEdgeAdminDashboard() {
     }
   };
 
-  const splashMinTime = new Promise(res => setTimeout(res, 700));
-  const splashHardTimeout = new Promise(res => setTimeout(res, 6000));
+  const splashMinTime = new Promise(res => setTimeout(res, 1000));
   const splashStatusEl = document.getElementById('splashStatus');
   const splashSteps = faOn()
     ? ['بررسی D1 و متغیرها…', 'خواندن تنظیمات پنل…', 'بررسی اتصال Cloudflare…', 'آماده‌سازی داشبورد…']
@@ -8505,7 +8627,7 @@ function matrixEdgeAdminDashboard() {
     splashStepIdx = (splashStepIdx + 1) % splashSteps.length;
     if (splashStatusEl) splashStatusEl.textContent = splashSteps[splashStepIdx];
   }, 450);
-  Promise.race([Promise.all([loadConfig(), splashMinTime]), splashHardTimeout]).finally(() => {
+  Promise.all([loadConfig(), splashMinTime]).finally(() => {
     clearInterval(splashStepTimer);
     if (splashStatusEl) splashStatusEl.textContent = faOn() ? '✅ آماده است' : '✅ Ready';
     const sp = document.getElementById('splash');
