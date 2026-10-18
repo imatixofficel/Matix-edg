@@ -1,0 +1,114 @@
+package com.v2ray.ang.ui.checkupdate
+
+import android.os.Bundle
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.v2ray.ang.BuildConfig
+import com.v2ray.ang.R
+import com.v2ray.ang.core.CoreNativeManager
+import com.v2ray.ang.ui.base.BaseComponentActivity
+import com.v2ray.ang.ui.compose.AppTopBar
+import com.v2ray.ang.ui.compose.NavigationBarsSpacer
+import com.v2ray.ang.ui.compose.SettingsMenuItem
+import com.v2ray.ang.ui.compose.SettingsSwitchItem
+import com.v2ray.ang.ui.compose.VersionInfoBlock
+import com.v2ray.ang.ui.compose.verticalScrollbar
+import com.v2ray.ang.util.Utils
+
+class CheckUpdateActivity : BaseComponentActivity() {
+
+    private val viewModel: CheckUpdateViewModel by viewModels()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) {
+            viewModel.checkForUpdates()
+        }
+    }
+
+    @Composable
+    override fun ScreenContent() {
+        CheckUpdateScreen(viewModel = viewModel, onBackClick = { finish() })
+    }
+}
+
+@Composable
+fun CheckUpdateScreen(
+    viewModel: CheckUpdateViewModel,
+    onBackClick: () -> Unit
+) {
+    val context = LocalContext.current
+
+    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
+    val checkPreRelease by viewModel.checkPreRelease.collectAsStateWithLifecycle()
+    val showUpdateDialog by viewModel.showUpdateDialog.collectAsStateWithLifecycle()
+    val updateResult by viewModel.updateResult.collectAsStateWithLifecycle()
+
+    val versionText = "Matixray v${BuildConfig.VERSION_NAME.trimStart('v', 'V')}"
+
+    Scaffold(
+        contentWindowInsets = WindowInsets(0),
+        topBar = {
+            AppTopBar(
+                title = stringResource(R.string.update_check_for_update),
+                onBackClick = onBackClick,
+                isLoading = isLoading
+            )
+        }
+    ) { innerPadding ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .verticalScroll(rememberScrollState())
+        ) {
+            SettingsSwitchItem(
+                icon = painterResource(R.drawable.ic_source_code_24dp),
+                title = stringResource(R.string.update_check_pre_release),
+                checked = checkPreRelease,
+                onCheckedChange = { viewModel.toggleCheckPreRelease(it) }
+            )
+            SettingsMenuItem(
+                icon = painterResource(R.drawable.ic_check_update_24dp),
+                title = stringResource(R.string.update_check_for_update),
+                onClick = { viewModel.checkForUpdates() }
+            )
+            // The release page of Matixray: the name of the app, and a tap opens it.
+            SettingsMenuItem(
+                icon = painterResource(R.drawable.ic_github_24dp),
+                title = stringResource(R.string.app_name),
+                onClick = { Utils.openUri(context, com.v2ray.ang.AppConfig.APP_URL + "/releases") }
+            )
+            VersionInfoBlock(versionText = versionText)
+            NavigationBarsSpacer()
+        }
+    }
+
+    if (showUpdateDialog && updateResult != null) {
+        val result = updateResult!!
+        // Matixray: the new version is downloaded and installed from inside the app (a release page opens in the browser).
+        com.v2ray.ang.ui.main.InAppUpdateDialog(
+            version = result.latestVersion.orEmpty(),
+            url = result.downloadUrl,
+            onDismiss = { viewModel.dismissUpdateDialog() },
+        )
+    }
+}
